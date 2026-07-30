@@ -118,3 +118,120 @@ a {
   font-size: 14px;
   font-weight: 600;
 }
+
+.lab-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.lab-section {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.lab-section-title {
+  margin: 0 0 16px;
+  font-size: 1.25rem;
+}
+
+.lab-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 16px;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  background: #fff;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+}
+
+.performance-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.comparison-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comparison-column h3 {
+  margin: 0;
+}
+
+.callout {
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.callout-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.callout-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.callout-info {
+  background: #eef6ff;
+  border-color: #339af0;
+}
+
+.callout-success {
+  background: #edf7ed;
+  border-color: #2f9e44;
+}
+
+.callout-warning {
+  background: #fff4e6;
+  border-color: #f08c00;
+}
+
+.callout-danger {
+  background: #fff5f5;
+  border-color: #e03131;
+}
+
+.lab-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.lab-card-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.lab-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
