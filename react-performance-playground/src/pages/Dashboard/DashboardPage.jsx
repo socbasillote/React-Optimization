@@ -1,11 +1,10 @@
-function DashboardPage() {
-  return (
-    <>
-      <h2>Dashboard</h2>
+import Page from "../../components/ui/Page";
 
-      <p>Welcome to React Performance Playground</p>
-    </>
+export default function DashboardPage() {
+  return (
+    <Page
+      title="Dashboard"
+      description="Welcome to React Performance Playground."
+    />
   );
 }
-
-export default DashboardPage;

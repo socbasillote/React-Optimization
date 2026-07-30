@@ -1,11 +1,10 @@
-function BundleAnalyzerPage() {
-  return (
-    <>
-      <h2>Bundle Analyzer</h2>
+import Page from "../../../components/ui/Page";
 
-      <p>Bundle information will appear here.</p>
-    </>
+export default function BundleAnalyzerPage() {
+  return (
+    <Page
+      title="Bundle Analyzer"
+      description="Bundle information will appear here."
+    />
   );
 }
-
-export default BundleAnalyzerPage;

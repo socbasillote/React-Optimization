@@ -1,11 +1,10 @@
-function NetworkInspectorPage() {
-  return (
-    <>
-      <h2>Network Inspector</h2>
+import Page from "../../../components/ui/Page";
 
-      <p>Network activity will appear here.</p>
-    </>
+export default function NetworkInspectorPage() {
+  return (
+    <Page
+      title="Network Inspector"
+      description="Network activity will appear here."
+    />
   );
 }
-
-export default NetworkInspectorPage;

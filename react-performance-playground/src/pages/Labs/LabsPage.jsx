@@ -1,11 +1,10 @@
-function LabsPage() {
-  return (
-    <>
-      <h2>Optimization Labs</h2>
+import Page from "../../components/ui/Page";
 
-      <p>Select a lab from this section.</p>
-    </>
+export default function LabsPage() {
+  return (
+    <Page
+      title="Optimization Labs"
+      description="Select a lab to begin learning frontend optimization."
+    />
   );
 }
-
-export default LabsPage;

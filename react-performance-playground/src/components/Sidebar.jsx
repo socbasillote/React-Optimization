@@ -1,13 +1,5 @@
 import { NavLink } from "react-router-dom";
-
-const navigation = [
-  { label: "Dashboard", path: "/" },
-  { label: "Optimization Labs", path: "/labs" },
-  { label: "Performance Monitor", path: "/performance" },
-  { label: "Network Inspector", path: "/network" },
-  { label: "Bundle Analyzer", path: "/bundle" },
-  { label: "Settings", path: "/settings" },
-];
+import navigation from "../app/navigation";
 
 function Sidebar() {
   return (

@@ -1,11 +1,10 @@
-function PerformanceMonitorPage() {
-  return (
-    <>
-      <h2>Performance Monitor</h2>
+import Page from "../../../components/ui/Page";
 
-      <p>Performance metrics will appear here.</p>
-    </>
+export default function PerformanceMonitorPage() {
+  return (
+    <Page
+      title="Performance Monitor"
+      description="Performance metrics will appear here."
+    />
   );
 }
-
-export default PerformanceMonitorPage;
