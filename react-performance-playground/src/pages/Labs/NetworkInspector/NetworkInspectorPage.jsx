@@ -5,6 +5,6 @@ export default function NetworkInspectorPage() {
     <Page
       title="Network Inspector"
       description="Network activity will appear here."
-    />
+    ></Page>
   );
 }

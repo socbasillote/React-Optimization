@@ -1,9 +1,11 @@
+import Page from "../../components/ui/Page";
+
 function SettingsPage() {
   return (
-    <>
-      <h2>Settings</h2>
-      <p>Application settings will never appear here.</p>
-    </>
+    <Page
+      title="Settings"
+      description="Application settings will never appear here."
+    ></Page>
   );
 }
 

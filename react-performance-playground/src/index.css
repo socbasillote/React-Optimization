@@ -92,3 +92,29 @@ a {
   flex-direction: column;
   gap: 24px;
 }
+
+.render-counter {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-top: 12px;
+  border-radius: 6px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.performance-overlay {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+
+  height: 48px;
+  padding: 0 24px;
+
+  border-top: 1px solid #ddd;
+  background: white;
+
+  font-size: 14px;
+  font-weight: 600;
+}

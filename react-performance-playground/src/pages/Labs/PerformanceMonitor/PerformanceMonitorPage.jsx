@@ -5,6 +5,6 @@ export default function PerformanceMonitorPage() {
     <Page
       title="Performance Monitor"
       description="Performance metrics will appear here."
-    />
+    ></Page>
   );
 }

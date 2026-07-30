@@ -5,6 +5,6 @@ export default function BundleAnalyzerPage() {
     <Page
       title="Bundle Analyzer"
       description="Bundle information will appear here."
-    />
+    ></Page>
   );
 }

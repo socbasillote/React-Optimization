@@ -5,6 +5,6 @@ export default function DashboardPage() {
     <Page
       title="Dashboard"
       description="Welcome to React Performance Playground."
-    />
+    ></Page>
   );
 }
