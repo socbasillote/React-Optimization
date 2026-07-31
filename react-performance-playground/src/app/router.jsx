@@ -13,7 +13,8 @@ import SettingsPage from "../pages/Settings/SettingsPage";
 //import UseMemoLabs from "../labs/use-memo";
 //import FunctionIdentityLabs from "../labs/function-identity";
 //import UseCallbackLabs from "../labs/useCallback";
-import NotToMeMoize from "../labs/NotToMemoize";
+//import NotToMeMoize from "../labs/NotToMemoize";
+import DeriveState from "../labs/derived_state";
 //import RenderingFundamentalsLab from "../labs/rendering-fundamentals";
 
 export default function AppRouter() {
@@ -21,7 +22,7 @@ export default function AppRouter() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
-        <Route path="labs" element={<NotToMeMoize />} />
+        <Route path="labs" element={<DeriveState />} />
         <Route path="performance" element={<PerformanceMonitorPage />} />
         <Route path="network" element={<NetworkInspectorPage />} />
         <Route path="bundle" element={<BundleAnalyzerPage />} />
