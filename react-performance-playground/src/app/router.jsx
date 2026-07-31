@@ -10,7 +10,8 @@ import BundleAnalyzerPage from "../pages/Labs/BundleAnalyzer/BundleAnalyzerPage"
 import SettingsPage from "../pages/Settings/SettingsPage";
 //import RenderingFundamentalsLabMemo from "../labs/react-memo";
 //import RenderingFundamentalsLabReferential from "../labs/referential-equality";
-import UseMemoLabs from "../labs/use-memo";
+//import UseMemoLabs from "../labs/use-memo";
+import FunctionIdentityLabs from "../labs/function-identity";
 //import RenderingFundamentalsLab from "../labs/rendering-fundamentals";
 
 export default function AppRouter() {
@@ -18,7 +19,7 @@ export default function AppRouter() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
-        <Route path="labs" element={<UseMemoLabs />} />
+        <Route path="labs" element={<FunctionIdentityLabs />} />
         <Route path="performance" element={<PerformanceMonitorPage />} />
         <Route path="network" element={<NetworkInspectorPage />} />
         <Route path="bundle" element={<BundleAnalyzerPage />} />
