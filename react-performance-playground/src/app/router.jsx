@@ -15,7 +15,8 @@ import SettingsPage from "../pages/Settings/SettingsPage";
 //import UseCallbackLabs from "../labs/useCallback";
 //import NotToMeMoize from "../labs/NotToMemoize";
 //import DeriveState from "../labs/derived_state";
-import SelectorLabs from "../labs/selectors";
+//import SelectorLabs from "../labs/selectors";
+import Normalization from "../labs/normalization";
 //import RenderingFundamentalsLab from "../labs/rendering-fundamentals";
 
 export default function AppRouter() {
@@ -23,7 +24,7 @@ export default function AppRouter() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
-        <Route path="labs" element={<SelectorLabs />} />
+        <Route path="labs" element={<Normalization />} />
         <Route path="performance" element={<PerformanceMonitorPage />} />
         <Route path="network" element={<NetworkInspectorPage />} />
         <Route path="bundle" element={<BundleAnalyzerPage />} />

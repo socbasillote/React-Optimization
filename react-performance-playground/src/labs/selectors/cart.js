@@ -37,3 +37,9 @@ export const selectCartTotal = createSelector(
     }, 0);
   }
 ); */
+
+/**
+ * createSelector(state, callback)
+ * state = state to calculate
+ * callback - How do I derive the value
+ */
