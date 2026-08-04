@@ -14,4 +14,6 @@ export const createCurriculumSchema = z.object({
   }),
 });
 
-export const updateCurriculumSchema = createCurriculumSchema.deepPartial();
+export const updateCurriculumSchema = z.object({
+  body: createCurriculumSchema.shape.body.partial(),
+});
