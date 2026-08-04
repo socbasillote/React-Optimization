@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 import ApiError from "../../utils/ApiError.js";
-import User from "../modules/users/user.model.js";
+import User from "../users/user.model.js";
 import EmailVerification from "./emailVerification.model.js";
 
 const hashToken = (token) => {

@@ -1,5 +1,5 @@
 import ApiError from "../../utils/ApiError.js";
-import User from "../modules/users/user.model.js";
+import User from "../users/user.model.js";
 
 export const getMe = async (userId) => {
   const user = await User.findById(userId);

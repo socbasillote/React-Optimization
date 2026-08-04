@@ -1,6 +1,5 @@
 import ApiError from "../../utils/ApiError.js";
-import User from "../modules/users/user.model.js";
-
+import User from "../users/user.model.js";
 import * as sessionService from "./session.service.js";
 import {
   generateAccessToken,
