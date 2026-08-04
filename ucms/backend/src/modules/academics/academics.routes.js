@@ -4,6 +4,7 @@ import academicYearRoutes from "./academic-year/academicYear.routes.js";
 import academicTermRoutes from "./academic-term/academicTerm.routes.js";
 import curriculumRoutes from "./curriculum/curriculum.routes.js";
 import subjectRoutes from "./subject/subject.routes.js";
+import curriculumSubjectRoutes from "./curriculum-subject/curriculumSubject.routes.js";
 
 const router = express.Router();
 
@@ -11,4 +12,5 @@ router.use("/academic-years", academicYearRoutes);
 router.use("/academic-terms", academicTermRoutes);
 router.use("/curricula", curriculumRoutes);
 router.use("/subjects", subjectRoutes);
+router.use("/curriculum-subjects", curriculumSubjectRoutes);
 export default router;
