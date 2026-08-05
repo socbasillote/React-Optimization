@@ -1,0 +1,244 @@
+import ApiError from "../../../utils/ApiError.js";
+
+import Attendance from "./attendance.model.js";
+
+import Enrollment from "../enrollment/enrollment.model.js";
+import ClassSchedule from "../class-schedule/classSchedule.model.js";
+
+export const DAYS = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+];
+
+export const createAttendance = async (payload) => {
+  const enrollment = await Enrollment.findById(payload.enrollment).populate(
+    "courseOffering",
+  );
+
+  if (!enrollment) {
+    throw new ApiError(404, "Enrollment not found.");
+  }
+
+  const classSchedule = await ClassSchedule.findById(
+    payload.classSchedule,
+  ).populate("courseOffering");
+
+  if (!classSchedule) {
+    throw new ApiError(404, "Class schedule not found.");
+  }
+
+  if (
+    enrollment.courseOffering._id.toString() !==
+    classSchedule.courseOffering._id.toString()
+  ) {
+    throw new ApiError(
+      400,
+      "Enrollment does not belong to this class schedule.",
+    );
+  }
+
+  const attendanceDay = DAYS[new Date(payload.date).getDay()];
+
+  if (attendanceDay !== classSchedule.day) {
+    throw new ApiError(
+      400,
+      "Attendance date does not match the class schedule day.",
+    );
+  }
+
+  const duplicate = await Attendance.findOne({
+    enrollment: payload.enrollment,
+    classSchedule: payload.classSchedule,
+    date: payload.date,
+  });
+
+  if (duplicate) {
+    throw new ApiError(409, "Attendance already recorded.");
+  }
+
+  return Attendance.create(payload);
+};
+
+export const getAttendances = async ({
+  page = 1,
+  limit = 10,
+  enrollment,
+  classSchedule,
+  date,
+  status,
+}) => {
+  page = Number(page);
+  limit = Number(limit);
+
+  const filter = {};
+
+  if (enrollment) {
+    filter.enrollment = enrollment;
+  }
+
+  if (classSchedule) {
+    filter.classSchedule = classSchedule;
+  }
+
+  if (date) {
+    filter.date = new Date(date);
+  }
+
+  if (status) {
+    filter.status = status;
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [attendances, total] = await Promise.all([
+    Attendance.find(filter)
+      .populate({
+        path: "enrollment",
+        populate: {
+          path: "student",
+          populate: {
+            path: "user",
+            select: "firstName lastName email",
+          },
+        },
+      })
+      .populate({
+        path: "classSchedule",
+        populate: {
+          path: "courseOffering",
+          populate: [
+            {
+              path: "curriculumSubject",
+              populate: {
+                path: "subject",
+                select: "code title",
+              },
+            },
+            {
+              path: "section",
+              select: "name",
+            },
+          ],
+        },
+      })
+      .sort({
+        date: -1,
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit),
+
+    Attendance.countDocuments(filter),
+  ]);
+
+  return {
+    attendances,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export const getAttendanceById = async (id) => {
+  const attendance = await Attendance.findById(id)
+    .populate({
+      path: "enrollment",
+      populate: {
+        path: "student",
+        populate: {
+          path: "user",
+          select: "firstName lastName email",
+        },
+      },
+    })
+    .populate({
+      path: "classSchedule",
+      populate: {
+        path: "courseOffering",
+        populate: [
+          {
+            path: "curriculumSubject",
+            populate: {
+              path: "subject",
+              select: "code title",
+            },
+          },
+          {
+            path: "section",
+            select: "name",
+          },
+        ],
+      },
+    });
+
+  if (!attendance) {
+    throw new ApiError(404, "Attendance not found.");
+  }
+
+  return attendance;
+};
+
+export const updateAttendance = async (id, payload) => {
+  const attendance = await Attendance.findById(id);
+
+  if (!attendance) {
+    throw new ApiError(404, "Attendance not found.");
+  }
+
+  if (payload.enrollment) {
+    const exists = await Enrollment.findById(payload.enrollment);
+
+    if (!exists) {
+      throw new ApiError(404, "Enrollment not found.");
+    }
+  }
+
+  if (payload.classSchedule) {
+    const exists = await ClassSchedule.findById(payload.classSchedule);
+
+    if (!exists) {
+      throw new ApiError(404, "Class schedule not found.");
+    }
+  }
+
+  const enrollment = payload.enrollment ?? attendance.enrollment;
+
+  const classSchedule = payload.classSchedule ?? attendance.classSchedule;
+
+  const date = payload.date ?? attendance.date;
+
+  const duplicate = await Attendance.findOne({
+    _id: { $ne: id },
+    enrollment,
+    classSchedule,
+    date,
+  });
+
+  if (duplicate) {
+    throw new ApiError(409, "Attendance already recorded.");
+  }
+
+  Object.assign(attendance, payload);
+
+  await attendance.save();
+
+  return getAttendanceById(attendance.id);
+};
+
+export const deleteAttendance = async (id) => {
+  const attendance = await Attendance.findById(id);
+
+  if (!attendance) {
+    throw new ApiError(404, "Attendance not found.");
+  }
+
+  await attendance.deleteOne();
+};
