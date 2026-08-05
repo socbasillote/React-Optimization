@@ -1,0 +1,5 @@
+export const ENROLLMENT_STATUS = Object.freeze({
+  ENROLLED: "ENROLLED",
+  DROPPED: "DROPPED",
+  COMPLETED: "COMPLETED",
+});
