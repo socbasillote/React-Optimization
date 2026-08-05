@@ -15,6 +15,8 @@ import assignmentRoutes from "./assignment/assignment.routes.js";
 import assignmentSubmissionRoutes from "./assignment-submission/assignmentSubmission.routes.js";
 import quizRoutes from "./quiz/quiz.routes.js";
 import quizSubmissionRoutes from "./quiz-submission/quizSubmission.routes.js";
+import announcementRoutes from "./announcement/announcement.routes.js";
+import dashboardRoutes from "./dashboard/dashboard.routes.js";
 
 const router = express.Router();
 
@@ -33,5 +35,7 @@ router.use("/assignments", assignmentRoutes);
 router.use("/assignment-submissions", assignmentSubmissionRoutes);
 router.use("/quizzes", quizRoutes);
 router.use("/quiz-submissions", quizSubmissionRoutes);
+router.use("/announcements", announcementRoutes);
+router.use("/dashboard", dashboardRoutes);
 
 export default router;
