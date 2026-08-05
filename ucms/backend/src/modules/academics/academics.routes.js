@@ -11,6 +11,7 @@ import enrollmentRoutes from "./enrollment/enrollment.routes.js";
 import classScheduleRoutes from "./class-schedule/classSchedule.routes.js";
 import attendanceRoutes from "./attendance/attendance.routes.js";
 import gradeRoutes from "./grade/grade.routes.js";
+import assignmentRoutes from "./assignment/assignment.routes.js";
 
 const router = express.Router();
 
@@ -25,4 +26,6 @@ router.use("/enrollments", enrollmentRoutes);
 router.use("/class-schedules", classScheduleRoutes);
 router.use("/attendances", attendanceRoutes);
 router.use("/grades", gradeRoutes);
+router.use("/assignments", assignmentRoutes);
+
 export default router;
