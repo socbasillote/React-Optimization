@@ -13,6 +13,7 @@ import attendanceRoutes from "./attendance/attendance.routes.js";
 import gradeRoutes from "./grade/grade.routes.js";
 import assignmentRoutes from "./assignment/assignment.routes.js";
 import assignmentSubmissionRoutes from "./assignment-submission/assignmentSubmission.routes.js";
+import quizRoutes from "./quiz/quiz.routes.js";
 
 const router = express.Router();
 
@@ -29,5 +30,6 @@ router.use("/attendances", attendanceRoutes);
 router.use("/grades", gradeRoutes);
 router.use("/assignments", assignmentRoutes);
 router.use("/assignment-submissions", assignmentSubmissionRoutes);
+router.use("/quizzes", quizRoutes);
 
 export default router;
