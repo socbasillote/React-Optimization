@@ -5,6 +5,7 @@ import ProtectedLayout from "@/layouts/ProtectedLayout";
 
 import LoginPage from "@/features/auth/pages/LoginPage";
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+import { AppLayout } from "@/components/layout";
 
 const router = createBrowserRouter([
   {
@@ -22,8 +23,17 @@ const router = createBrowserRouter([
     element: <ProtectedLayout />,
     children: [
       {
-        path: "dashboard",
-        element: <DashboardPage />,
+        element: <AppLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <DashboardPage />,
+            handle: {
+              title: "Dashboard",
+              breadcrumb: [{ label: "Dashboard" }],
+            },
+          },
+        ],
       },
     ],
   },

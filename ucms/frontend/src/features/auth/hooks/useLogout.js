@@ -5,6 +5,7 @@ import { useLogoutMutation } from "../api";
 import { clearAccessToken } from "../authSlice";
 import { getErrorMessage } from "@/utils/getErrorMessage";
 import { useDispatch } from "react-redux";
+import { apiSlice } from "@/services/api/apiSlice";
 
 export function useLogout() {
   const navigate = useNavigate();
@@ -15,9 +16,9 @@ export function useLogout() {
   const logout = async () => {
     try {
       await logoutMutation().unwrap();
-
-      toast.success("Signed out successfully.");
       dispatch(clearAccessToken());
+      dispatch(apiSlice.util.resetApiState());
+      toast.success("Signed out successfully.");
 
       navigate("/login", {
         replace: true,

@@ -11,9 +11,7 @@ import AuthProvider from "./app/providers/AuthProvider";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <App />
     </Provider>
   </StrictMode>,
 );

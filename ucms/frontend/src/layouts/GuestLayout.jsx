@@ -1,12 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
-
-import { useGetCurrentUserQuery } from "@/features/auth/api";
+import { useSelector } from "react-redux";
 
 export default function GuestLayout() {
-  const { data: user } = useGetCurrentUserQuery();
+  const { accessToken } = useSelector((state) => state.auth);
 
-  if (user) {
-    return <Navigate replace to="/app/dashboard" />;
+  if (accessToken) {
+    return <Navigate to="/app/dashboard" replace />;
   }
 
   return <Outlet />;
