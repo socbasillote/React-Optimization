@@ -5,16 +5,18 @@ import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 export default function NavigationItem({ item }) {
   const location = useLocation();
 
-  const isActive = location.pathname === item.url;
+  const Icon = item.icon;
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <Link to={item.url}>
-          {item.icon && <item.icon />}
-
-          <span>{item.title}</span>
-        </Link>
+      <SidebarMenuButton
+        isActive={location.pathname === item.url}
+        render={
+          <Link to={item.url} className="flex w-full items-center gap-2" />
+        }
+      >
+        {Icon && <Icon className="h-4 w-4 shrink-0" />}
+        <span>{item.title}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );

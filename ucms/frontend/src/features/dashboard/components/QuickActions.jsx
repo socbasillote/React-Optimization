@@ -1,8 +1,41 @@
-import { Plus, Users, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
+import { BookOpen, GraduationCap, Plus, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+const actions = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: GraduationCap,
+    to: "/app/dashboard",
+    enabled: true,
+  },
+  {
+    id: "students",
+    label: "Students",
+    icon: Plus,
+    to: "/app/students",
+    enabled: false,
+  },
+  {
+    id: "faculty",
+    label: "Faculty",
+    icon: Users,
+    to: "/app/faculty",
+    enabled: false,
+  },
+  {
+    id: "subjects",
+    label: "Subjects",
+    icon: BookOpen,
+    to: "/app/subjects",
+    enabled: false,
+  },
+];
 
 export default function QuickActions() {
   return (
@@ -11,21 +44,35 @@ export default function QuickActions() {
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-wrap gap-3">
-        <Button>
-          <Plus />
-          New Student
-        </Button>
+      <CardContent className="grid grid-cols-2 gap-3">
+        {actions.map((action) => {
+          const Icon = action.icon;
 
-        <Button variant="secondary">
-          <Users />
-          Faculty
-        </Button>
+          if (!action.enabled) {
+            return (
+              <Button
+                key={action.label}
+                variant="outline"
+                disabled
+                className="justify-start"
+              >
+                <Icon className="h-4 w-4" />
+                <span>{action.label}</span>
+              </Button>
+            );
+          }
 
-        <Button variant="secondary">
-          <BookOpen />
-          Subjects
-        </Button>
+          return (
+            <Link
+              key={action.label}
+              to={action.to}
+              className={cn(buttonVariants(), "justify-start")}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{action.label}</span>
+            </Link>
+          );
+        })}
       </CardContent>
     </Card>
   );

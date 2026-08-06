@@ -26,24 +26,22 @@ export default function UserMenu() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton size="lg">
-              <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full">
-                {user?.firstName?.charAt(0) ?? "U"}
-              </div>
+          <DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              {user?.firstName?.charAt(0) ?? "U"}
+            </div>
 
-              <div className="grid flex-1 text-left">
-                <span className="truncate font-medium">
-                  {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
-                </span>
+            <div className="grid flex-1 text-left">
+              <span className="truncate font-medium">
+                {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
+              </span>
 
-                <span className="truncate text-xs text-muted-foreground">
-                  {user?.email}
-                </span>
-              </div>
+              <span className="truncate text-xs text-muted-foreground">
+                {user?.email}
+              </span>
+            </div>
 
-              <ChevronsUpDown className="ml-auto h-4 w-4" />
-            </SidebarMenuButton>
+            <ChevronsUpDown className="ml-auto h-4 w-4" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-56">
