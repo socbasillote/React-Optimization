@@ -114,3 +114,24 @@ Application
 ├── Diagnose
 ├── Optimize
 └── Verify
+
+---
+
+Project Setup
+🟡 Project Setup
+⬜ Authentication
+⬜ Application Layout
+⬜ Dashboard
+⬜ Organization
+⬜ Academic Structure
+⬜ Students
+⬜ Faculty
+⬜ Course Offerings
+⬜ Enrollment
+⬜ Class Schedule
+⬜ Attendance
+⬜ Grades
+⬜ Assignments
+⬜ Quizzes
+⬜ Announcements
+⬜ Final Polish

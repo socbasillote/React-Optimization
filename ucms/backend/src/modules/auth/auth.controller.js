@@ -34,6 +34,18 @@ export const login = async (req, res) => {
   });
 };
 
+export const getCurrentUser = async (req, res) => {
+  console.log("REQ.USER:", req.user);
+
+  const user = await authService.getCurrentUser(req.user.id);
+
+  console.log("FOUND USER:", user);
+  sendResponse(res, {
+    message: "Current user retrieved successfully.",
+    data: user,
+  });
+};
+
 export const logout = async (req, res) => {
   const { refreshToken } = req.cookies;
 
@@ -128,5 +140,16 @@ export const changePassword = async (req, res) => {
   sendResponse(res, {
     message: "Password changed successfully. Please log in again.",
     data: null,
+  });
+};
+
+export const refreshToken = async (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  const result = await authService.refresh(refreshToken);
+
+  sendResponse(res, {
+    message: "Access token refreshed successfully.",
+    data: result,
   });
 };

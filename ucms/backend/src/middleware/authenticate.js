@@ -12,7 +12,7 @@ const authenticate = async (req, res, next) => {
   const token = authorization.split(" ")[1];
 
   const payload = verifyAccessToken(token);
-
+  console.log("PAYLOAD:", payload);
   const user = await User.findById(payload.id);
 
   if (!user) {

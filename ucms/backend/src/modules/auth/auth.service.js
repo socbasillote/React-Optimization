@@ -67,6 +67,10 @@ export const register = async (payload) => {
   return user;
 };
 
+export const getCurrentUser = async (userId) => {
+  return await User.findById(userId).select("-password -refreshToken");
+};
+
 export const refresh = async (refreshToken) => {
   if (!refreshToken) {
     throw new ApiError(401, "Refresh token is required.");

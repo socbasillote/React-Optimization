@@ -25,7 +25,10 @@ router.post(
   sessionContext,
   authController.login,
 );
-router.post("/refresh", authController.login);
+
+router.get("/current-user", authenticate, authController.getCurrentUser);
+
+router.post("/refresh", authController.refreshToken);
 router.post("/logout", authController.logout);
 
 router.post(
