@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import CampusToolbar from "../components/CampusToolbar";
 import CampusTable from "../components/CampusTable";
 
 import useDebounce from "@/hooks/useDebounce";
@@ -14,6 +13,10 @@ import CampusDialog from "../components/CampusDialog";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/common/PageHeader";
+import { Plus } from "lucide-react";
+import SearchToolbar from "@/components/common/SearchToolbar";
 
 export default function CampusPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -57,16 +60,17 @@ export default function CampusPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Campuses</h1>
+      <PageHeader title="Campuses" description="Manage university campuses.">
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Campus
+        </Button>
+      </PageHeader>
 
-        <p className="text-muted-foreground">Manage university campuses.</p>
-      </div>
-
-      <CampusToolbar
-        search={search}
-        onSearchChange={handleSearchChange}
-        onCreate={() => setDialogOpen(true)}
+      <SearchToolbar
+        value={search}
+        onChange={handleSearchChange}
+        placeholder="Search campuses..."
       />
 
       <CampusTable
