@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./AppSidebar";
 import AppHeader from "./AppHeader";
 import PageContainer from "./PageContainer";
+import AppBreadcrumb from "./AppBreadcrumb";
 
 export default function AppLayout() {
   return (
@@ -13,7 +14,7 @@ export default function AppLayout() {
 
       <SidebarInset>
         <AppHeader />
-
+        <AppBreadcrumb />
         <PageContainer>
           <Outlet />
         </PageContainer>
