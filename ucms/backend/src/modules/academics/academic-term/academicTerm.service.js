@@ -147,6 +147,7 @@ export const updateAcademicTerm = async (id, payload) => {
   if (payload.isCurrent) {
     await AcademicTerm.updateMany(
       {
+        academicYear: academicYearId,
         _id: { $ne: id },
       },
       {

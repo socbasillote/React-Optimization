@@ -4,7 +4,7 @@ export const academicYearApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAcademicYears: builder.query({
       query: (params) => ({
-        url: "academics/academic-years",
+        url: "academic/academic-years",
         params,
       }),
       providesTags: ["AcademicYear"],
@@ -17,7 +17,7 @@ export const academicYearApi = apiSlice.injectEndpoints({
 
     createAcademicYear: builder.mutation({
       query: (body) => ({
-        url: "academics/academic-years",
+        url: "academic/academic-years",
         method: "POST",
         body,
       }),
@@ -26,7 +26,7 @@ export const academicYearApi = apiSlice.injectEndpoints({
 
     updateAcademicYear: builder.mutation({
       query: ({ id, ...body }) => ({
-        url: `academics/academic-years/${id}`,
+        url: `academic/academic-years/${id}`,
         method: "PATCH",
         body,
       }),
@@ -35,7 +35,7 @@ export const academicYearApi = apiSlice.injectEndpoints({
 
     deleteAcademicYear: builder.mutation({
       query: (id) => ({
-        url: `academics/academic-years/${id}`,
+        url: `academic/academic-years/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["AcademicYear"],

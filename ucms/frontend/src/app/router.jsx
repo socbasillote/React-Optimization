@@ -11,6 +11,7 @@ import CollegePage from "@/features/organization/college/page/CollegePage";
 import DepartmentPage from "@/features/organization/department/pages/DepartmentPage";
 import ProgramPage from "@/features/organization/program/pages/ProgramPage";
 import AcademicYearPage from "@/features/academic/academic-year/pages/AcademicYearPage";
+import AcademicTermPage from "@/features/academic/academic-term/pages/AcademicTermPage";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,18 @@ const router = createBrowserRouter([
           {
             path: "academic-years",
             element: <AcademicYearPage />,
+            handle: {
+              title: "Academic Years",
+              breadcrumb: [{ label: "Academic Years" }],
+            },
+          },
+          {
+            path: "academic-terms",
+            element: <AcademicTermPage />,
+            handle: {
+              title: "Academic Terms",
+              breadcrumb: [{ label: "Academic Terms" }],
+            },
           },
         ],
       },

@@ -13,7 +13,7 @@ const router = express.Router();
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/organization", organizationRoutes);
-router.use("/academics", academicsRoutes);
+router.use("/academic", academicsRoutes);
 router.use("/students", studentRoutes);
 router.use("/faculty", facultyRoutes);
 router.use("/dashboard", dashboardRoutes);
