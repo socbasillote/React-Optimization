@@ -10,6 +10,7 @@ import CampusPage from "@/features/organization/campus/pages/CampusPage";
 import CollegePage from "@/features/organization/college/page/CollegePage";
 import DepartmentPage from "@/features/organization/department/pages/DepartmentPage";
 import ProgramPage from "@/features/organization/program/pages/ProgramPage";
+import AcademicYearPage from "@/features/academic/academic-year/pages/AcademicYearPage";
 
 const router = createBrowserRouter([
   {
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
               title: "Programs",
               breadcrumb: [{ label: "Programs" }],
             },
+          },
+          {
+            path: "academic-years",
+            element: <AcademicYearPage />,
           },
         ],
       },
