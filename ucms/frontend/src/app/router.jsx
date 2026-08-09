@@ -9,6 +9,7 @@ import { AppLayout } from "@/components/layout";
 import CampusPage from "@/features/organization/campus/pages/CampusPage";
 import CollegePage from "@/features/organization/college/page/CollegePage";
 import DepartmentPage from "@/features/organization/department/pages/DepartmentPage";
+import ProgramPage from "@/features/organization/program/pages/ProgramPage";
 
 const router = createBrowserRouter([
   {
@@ -55,6 +56,18 @@ const router = createBrowserRouter([
           {
             path: "departments",
             element: <DepartmentPage />,
+            handle: {
+              title: "Departments",
+              breadcrumb: [{ label: "Departments" }],
+            },
+          },
+          {
+            path: "programs",
+            element: <ProgramPage />,
+            handle: {
+              title: "Programs",
+              breadcrumb: [{ label: "Programs" }],
+            },
           },
         ],
       },
