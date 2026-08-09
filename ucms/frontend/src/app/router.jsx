@@ -8,6 +8,7 @@ import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import { AppLayout } from "@/components/layout";
 import CampusPage from "@/features/organization/campus/pages/CampusPage";
 import CollegePage from "@/features/organization/college/page/CollegePage";
+import DepartmentPage from "@/features/organization/department/pages/DepartmentPage";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
               title: "Colleges",
               breadcrumb: [{ label: "Colleges" }],
             },
+          },
+          {
+            path: "departments",
+            element: <DepartmentPage />,
           },
         ],
       },
