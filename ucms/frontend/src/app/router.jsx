@@ -15,6 +15,7 @@ import AcademicTermPage from "@/features/academic/academic-term/pages/AcademicTe
 import CurriculumPage from "@/features/academic/curriculum/pages/CurriculumPage";
 import SubjectPage from "@/features/academic/subject/pages/SubjectPage";
 import CurriculumSubjectPage from "@/features/academic/curriculum-subject/pages/CurriculumSubjectPage";
+import SectionPage from "@/features/academic/section/pages/SectionPage";
 
 const router = createBrowserRouter([
   {
@@ -112,6 +113,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Curriculum Subjects",
               breadcrumb: [{ label: "Curriculum Subjects" }],
+            },
+          },
+          {
+            path: "sections",
+            element: <SectionPage />,
+            handle: {
+              title: "Sections",
+              breadcrumb: [{ label: "Sections" }],
             },
           },
         ],

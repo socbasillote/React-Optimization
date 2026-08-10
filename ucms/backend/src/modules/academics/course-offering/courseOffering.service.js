@@ -41,7 +41,7 @@ export const createCourseOffering = async (payload) => {
     throw new ApiError(404, "Academic term not found.");
   }
 
-  if (academicTerm.academicYear.toString() !== academicYear.id) {
+  if (academicTerm.academicYear.toString() !== academicYear.id.toString()) {
     throw new ApiError(
       400,
       "Academic term does not belong to the selected academic year.",
@@ -178,18 +178,6 @@ export const updateCourseOffering = async (id, payload) => {
 
   const academicTerm = payload.academicTerm || offering.academicTerm;
 
-  const duplicate = await CourseOffering.findOne({
-    _id: { $ne: id },
-    curriculumSubject,
-    section,
-    academicYear,
-    academicTerm,
-  });
-
-  if (duplicate) {
-    throw new ApiError(409, "Course offering already exists.");
-  }
-
   if (payload.curriculumSubject) {
     const exists = await CurriculumSubject.findById(payload.curriculumSubject);
 
@@ -228,6 +216,25 @@ export const updateCourseOffering = async (id, payload) => {
     if (!exists) {
       throw new ApiError(404, "Academic term not found.");
     }
+
+    if (exists.academicYear.toString() !== academicYear.toString()) {
+      throw new ApiError(
+        400,
+        "Academic term does not belong to the selected academic year.",
+      );
+    }
+  }
+
+  const duplicate = await CourseOffering.findOne({
+    _id: { $ne: id },
+    curriculumSubject,
+    section,
+    academicYear,
+    academicTerm,
+  });
+
+  if (duplicate) {
+    throw new ApiError(409, "Course offering already exists.");
   }
 
   Object.assign(offering, payload);
