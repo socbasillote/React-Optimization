@@ -19,6 +19,7 @@ import SectionPage from "@/features/academic/section/pages/SectionPage";
 import FacultyPage from "@/features/faculty/pages/FacultyPage";
 import CourseOfferingPage from "@/features/academic/course-offering/pages/CourseOfferingPage";
 import UserPage from "@/features/users/pages/UserPage";
+import StudentPage from "@/features/students/pages/StudentPage";
 
 const router = createBrowserRouter([
   {
@@ -148,6 +149,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Users",
               breadcrumb: [{ label: "Users" }],
+            },
+          },
+          {
+            path: "students",
+            element: <StudentPage />,
+            handle: {
+              title: "Students",
+              breadcrumb: [{ label: "Students" }],
             },
           },
         ],
