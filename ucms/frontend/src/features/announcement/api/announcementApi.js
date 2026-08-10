@@ -4,7 +4,7 @@ export const announcementApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAnnouncements: builder.query({
       query: (params = {}) => ({
-        url: "/academics/announcements",
+        url: "/academic/announcements",
         params,
       }),
 

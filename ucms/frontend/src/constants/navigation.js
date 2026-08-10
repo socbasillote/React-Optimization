@@ -61,7 +61,7 @@ export const navigation = [
       },
       {
         title: "Curriculums",
-        url: "/app/curriculums",
+        url: "/app/academic-curriculum",
       },
       {
         title: "Subjects",
