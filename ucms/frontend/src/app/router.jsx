@@ -21,6 +21,7 @@ import CourseOfferingPage from "@/features/academic/course-offering/pages/Course
 import UserPage from "@/features/users/pages/UserPage";
 import StudentPage from "@/features/students/pages/StudentPage";
 import EnrollmentPage from "@/features/academic/enrollment/pages/EnrollmentPage";
+import ClassSchedulePage from "@/features/academic/class-schedule/pages/ClassSchedulePage";
 
 const router = createBrowserRouter([
   {
@@ -166,6 +167,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Enrollments",
               breadcrumb: [{ label: "Enrollments" }],
+            },
+          },
+          {
+            path: "class-schedules",
+            element: <ClassSchedulePage />,
+            handle: {
+              title: "Class Schedules",
+              breadcrumb: [{ label: "Class Schedules" }],
             },
           },
         ],

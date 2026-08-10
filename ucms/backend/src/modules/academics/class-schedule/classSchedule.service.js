@@ -197,6 +197,18 @@ export const updateClassSchedule = async (id, payload) => {
     excludeId: id,
   });
 
+  const duplicate = await ClassSchedule.findOne({
+    _id: { $ne: id },
+    courseOffering: payload.courseOffering ?? classSchedule.courseOffering,
+    day,
+    startTime,
+    endTime,
+  });
+
+  if (duplicate) {
+    throw new ApiError(409, "Class schedule already exists.");
+  }
+
   if (roomConflict) {
     throw new ApiError(409, "Room is already scheduled during this time.");
   }
