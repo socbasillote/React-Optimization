@@ -13,7 +13,7 @@ export default function useDepartmentOptions() {
     return (
       data?.data?.map((department) => ({
         value: department._id,
-        label: department.name,
+        label: `${department.code} - ${department.name}`,
       })) ?? []
     );
   }, [data]);
