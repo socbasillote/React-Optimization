@@ -21,6 +21,12 @@ export const navigation = [
     icon: LayoutDashboard,
     roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
+  {
+    title: "Users",
+    url: "/app/users",
+    icon: Users,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+  },
 
   {
     title: "Organization",

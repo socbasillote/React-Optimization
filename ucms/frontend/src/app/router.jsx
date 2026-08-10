@@ -18,6 +18,7 @@ import CurriculumSubjectPage from "@/features/academic/curriculum-subject/pages/
 import SectionPage from "@/features/academic/section/pages/SectionPage";
 import FacultyPage from "@/features/faculty/pages/FacultyPage";
 import CourseOfferingPage from "@/features/academic/course-offering/pages/CourseOfferingPage";
+import UserPage from "@/features/users/pages/UserPage";
 
 const router = createBrowserRouter([
   {
@@ -139,6 +140,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Course Offerings",
               breadcrumb: [{ label: "Course Offerings" }],
+            },
+          },
+          {
+            path: "users",
+            element: <UserPage />,
+            handle: {
+              title: "Users",
+              breadcrumb: [{ label: "Users" }],
             },
           },
         ],
