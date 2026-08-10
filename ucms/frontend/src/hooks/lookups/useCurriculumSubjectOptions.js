@@ -12,9 +12,11 @@ export default function useCurriculumSubjectOptions({ curriculum } = {}) {
 
   const options = useMemo(() => {
     return (
-      data?.data?.map((item) => ({
-        value: item._id,
-        label: `${item.subject?.code ?? ""} - ${item.subject?.title ?? ""}`,
+      data?.data?.map((curriculumSubject) => ({
+        value: curriculumSubject._id,
+        label: `${curriculumSubject.subject?.code ?? ""} - ${
+          curriculumSubject.subject?.title ?? ""
+        }`,
       })) ?? []
     );
   }, [data]);

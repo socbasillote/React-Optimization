@@ -4,20 +4,20 @@ export const courseOfferingApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCourseOfferings: builder.query({
       query: (params) => ({
-        url: "organization/course-offerings",
+        url: "academic/course-offerings",
         params,
       }),
       providesTags: ["CourseOffering"],
     }),
 
     getCourseOfferingById: builder.query({
-      query: (id) => `organization/course-offerings/${id}`,
+      query: (id) => `academic/course-offerings/${id}`,
       providesTags: (result, error, id) => [{ type: "CourseOffering", id }],
     }),
 
     createCourseOffering: builder.mutation({
       query: (body) => ({
-        url: "organization/course-offerings",
+        url: "academic/course-offerings",
         method: "POST",
         body,
       }),
@@ -26,7 +26,7 @@ export const courseOfferingApi = apiSlice.injectEndpoints({
 
     updateCourseOffering: builder.mutation({
       query: ({ id, ...body }) => ({
-        url: `organization/course-offerings/${id}`,
+        url: `academic/course-offerings/${id}`,
         method: "PATCH",
         body,
       }),
@@ -35,7 +35,7 @@ export const courseOfferingApi = apiSlice.injectEndpoints({
 
     deleteCourseOffering: builder.mutation({
       query: (id) => ({
-        url: `organization/course-offerings/${id}`,
+        url: `academic/course-offerings/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["CourseOffering"],

@@ -17,6 +17,7 @@ import SubjectPage from "@/features/academic/subject/pages/SubjectPage";
 import CurriculumSubjectPage from "@/features/academic/curriculum-subject/pages/CurriculumSubjectPage";
 import SectionPage from "@/features/academic/section/pages/SectionPage";
 import FacultyPage from "@/features/faculty/pages/FacultyPage";
+import CourseOfferingPage from "@/features/academic/course-offering/pages/CourseOfferingPage";
 
 const router = createBrowserRouter([
   {
@@ -130,6 +131,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Faculty",
               breadcrumb: [{ label: "Faculty" }],
+            },
+          },
+          {
+            path: "course-offerings",
+            element: <CourseOfferingPage />,
+            handle: {
+              title: "Course Offerings",
+              breadcrumb: [{ label: "Course Offerings" }],
             },
           },
         ],
