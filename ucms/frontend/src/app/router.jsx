@@ -23,6 +23,7 @@ import StudentPage from "@/features/students/pages/StudentPage";
 import EnrollmentPage from "@/features/academic/enrollment/pages/EnrollmentPage";
 import ClassSchedulePage from "@/features/academic/class-schedule/pages/ClassSchedulePage";
 import AttendancePage from "@/features/academic/attendance/pages/AttendancePage";
+import GradePage from "@/features/academic/grade/pages/GradePage";
 
 const router = createBrowserRouter([
   {
@@ -184,6 +185,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Attendance",
               breadcrumb: [{ label: "Attendance" }],
+            },
+          },
+          {
+            path: "grades",
+            element: <GradePage />,
+            handle: {
+              title: "Grade",
+              breadcrumb: [{ label: "Grade" }],
             },
           },
         ],
