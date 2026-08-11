@@ -47,3 +47,12 @@ export const deleteStudent = async (req, res) => {
     data: null,
   });
 };
+
+export const getCurrentStudent = async (req, res) => {
+  const student = await studentService.getCurrentStudent(req.user._id);
+
+  sendResponse(res, {
+    message: "Student profile retrieved successfully.",
+    data: student,
+  });
+};

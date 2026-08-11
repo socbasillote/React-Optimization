@@ -25,6 +25,8 @@ import ClassSchedulePage from "@/features/academic/class-schedule/pages/ClassSch
 import AttendancePage from "@/features/academic/attendance/pages/AttendancePage";
 import GradePage from "@/features/academic/grade/pages/GradePage";
 import AssignmentPage from "@/features/academic/assignment/pages/AssignmentPage";
+import QuizPage from "@/features/academic/quiz/pages/QuizPage";
+import AnnouncementPage from "@/features/academic/announcement/pages/AnnouncementPage";
 
 const router = createBrowserRouter([
   {
@@ -202,6 +204,22 @@ const router = createBrowserRouter([
             handle: {
               title: "Assignment",
               breadcrumb: [{ label: "Assignment" }],
+            },
+          },
+          {
+            path: "quizzes",
+            element: <QuizPage />,
+            handle: {
+              title: "Quizzes",
+              breadcrumb: [{ label: "Quizzes" }],
+            },
+          },
+          {
+            path: "announcements",
+            element: <AnnouncementPage />,
+            handle: {
+              title: "Announcements",
+              breadcrumb: [{ label: "Announcements" }],
             },
           },
         ],

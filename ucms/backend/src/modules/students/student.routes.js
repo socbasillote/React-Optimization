@@ -36,6 +36,12 @@ router.get(
   studentController.getStudentById,
 );
 
+router.get(
+  "/me",
+  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.FACULTY, ROLES.STUDENT),
+  studentController.getCurrentStudent,
+);
+
 router.patch(
   "/:id",
   authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN),

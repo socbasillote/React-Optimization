@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useGetAnnouncementsQuery } from "@/features/announcement/api/announcementApi";
+import { useGetAnnouncementsQuery } from "@/features/academic/announcement/api/announcementApi";
 
 export default function RecentAnnouncements() {
   const { data, isLoading } = useGetAnnouncementsQuery({

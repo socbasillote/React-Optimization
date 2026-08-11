@@ -195,3 +195,19 @@ export const deleteStudent = async (id) => {
 
   await student.deleteOne();
 };
+
+export const getCurrentStudent = async (userId) => {
+  const student = await Student.findOne({
+    user: userId,
+  })
+    .populate("user", "firstName middleName lastName email phone avatar")
+    .populate("program", "name code")
+    .populate("curriculum", "name")
+    .populate("section", "name yearLevel");
+
+  if (!student) {
+    throw new ApiError(404, "Student profile not found.");
+  }
+
+  return student;
+};
