@@ -55,6 +55,14 @@ export default function GradeTable({
   onEdit,
   onDelete,
 }) {
+  const canEdit = typeof onEdit === "function";
+
+  const canDelete = typeof onDelete === "function";
+
+  const showActions = canEdit || canDelete;
+
+  const columnCount = showActions ? 9 : 8;
+
   return (
     <div className="overflow-hidden rounded-lg border">
       <div className="overflow-x-auto">
@@ -77,21 +85,23 @@ export default function GradeTable({
 
               <TableHead>Remarks</TableHead>
 
-              <TableHead className="w-[100px]">Actions</TableHead>
+              {showActions && (
+                <TableHead className="w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={columnCount} className="h-24 text-center">
                   Loading grades...
                 </TableCell>
               </TableRow>
             ) : grades.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={columnCount}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No grades found.
@@ -133,33 +143,39 @@ export default function GradeTable({
 
                     <TableCell>{formatRemarks(grade.remarks)}</TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onEdit(grade)}
-                        >
-                          <Pencil />
+                    {showActions && (
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {canEdit && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onEdit(grade)}
+                            >
+                              <Pencil />
 
-                          <span className="sr-only">Edit grade</span>
-                        </Button>
+                              <span className="sr-only">Edit grade</span>
+                            </Button>
+                          )}
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onDelete(grade)}
-                        >
-                          <Trash2 />
+                          {canDelete && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onDelete(grade)}
+                            >
+                              <Trash2 />
 
-                          <span className="sr-only">Delete grade</span>
-                        </Button>
-                      </div>
-                    </TableCell>
+                              <span className="sr-only">Delete grade</span>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })

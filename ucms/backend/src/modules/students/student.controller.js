@@ -49,7 +49,7 @@ export const deleteStudent = async (req, res) => {
 };
 
 export const getCurrentStudent = async (req, res) => {
-  const student = await studentService.getCurrentStudent(req.user._id);
+  const student = await studentService.getCurrentStudent(req.user.id);
 
   sendResponse(res, {
     message: "Student profile retrieved successfully.",

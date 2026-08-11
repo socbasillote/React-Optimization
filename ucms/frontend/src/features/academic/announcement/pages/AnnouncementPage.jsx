@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,10 +18,11 @@ import {
 } from "../api/announcementApi";
 
 import AnnouncementDialog from "../components/AnnouncementDialog";
-
 import AnnouncementTable from "../components/AnnouncementTable";
 
 import useCourseOfferingOptions from "@/hooks/lookups/useCourseOfferingOptions";
+
+import { useGetCurrentUserQuery } from "@/features/auth/api/authApi";
 
 const getCourseOfferingId = (announcement) => {
   if (typeof announcement?.courseOffering === "object") {
@@ -43,13 +43,24 @@ export default function AnnouncementPage() {
 
   const [announcementToDelete, setAnnouncementToDelete] = useState(null);
 
+  const { data: currentUserData } = useGetCurrentUserQuery();
+
+  const role = currentUserData?.data?.role;
+
+  const canCreate =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canEdit =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canDelete = role === "SUPER_ADMIN" || role === "ADMIN";
+
   const { data, isLoading } = useGetAnnouncementsQuery({
     page,
     limit: 10,
   });
 
-  const { options: courseOfferingOptions, isLoading: courseOfferingLoading } =
-    useCourseOfferingOptions();
+  const { options: courseOfferingOptions } = useCourseOfferingOptions();
 
   const [deleteAnnouncement, { isLoading: isDeleting }] =
     useDeleteAnnouncementMutation();
@@ -71,25 +82,36 @@ export default function AnnouncementPage() {
   };
 
   const handleCreate = () => {
-    setSelectedAnnouncement(null);
+    if (!canCreate) {
+      return;
+    }
 
+    setSelectedAnnouncement(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (announcement) => {
+    if (!canEdit) {
+      return;
+    }
+
     setSelectedAnnouncement(announcement);
 
     setDialogOpen(true);
   };
 
   const handleDelete = (announcement) => {
+    if (!canDelete) {
+      return;
+    }
+
     setAnnouncementToDelete(announcement);
 
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!announcementToDelete) {
+    if (!canDelete || !announcementToDelete) {
       return;
     }
 
@@ -128,14 +150,18 @@ export default function AnnouncementPage() {
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            Manage announcements for your course offerings.
+            {canCreate || canEdit
+              ? "Manage announcements for your course offerings."
+              : "View announcements for your courses."}
           </p>
         </div>
 
-        <Button onClick={handleCreate}>
-          <Plus />
-          Create Announcement
-        </Button>
+        {canCreate && (
+          <Button onClick={handleCreate}>
+            <Plus />
+            Create Announcement
+          </Button>
+        )}
       </div>
 
       <AnnouncementTable
@@ -143,8 +169,8 @@ export default function AnnouncementPage() {
         courseOfferingOptions={courseOfferingOptions}
         isLoading={isLoading}
         isDeleting={isDeleting}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={canEdit ? handleEdit : undefined}
+        onDelete={canDelete ? handleDelete : undefined}
       />
 
       {meta.totalPages > 1 && (
@@ -175,74 +201,80 @@ export default function AnnouncementPage() {
         </div>
       )}
 
-      <AnnouncementDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogChange}
-        announcement={selectedAnnouncement}
-      />
+      {(canCreate || canEdit) && (
+        <AnnouncementDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogChange}
+          announcement={selectedAnnouncement}
+        />
+      )}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete Announcement</DialogTitle>
+      {canDelete && (
+        <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Announcement</DialogTitle>
 
-            <DialogDescription>
-              Are you sure you want to delete this announcement? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
+              <DialogDescription>
+                Are you sure you want to delete this announcement? This action
+                cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
 
-          {announcementToDelete && (
-            <div className="space-y-3 rounded-md border bg-muted/50 p-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Title</p>
+            {announcementToDelete && (
+              <div className="space-y-3 rounded-md border bg-muted/50 p-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Title</p>
 
-                <p className="font-medium">{announcementToDelete.title}</p>
+                  <p className="font-medium">{announcementToDelete.title}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Course Offering
+                  </p>
+
+                  <p className="text-sm">
+                    {getCourseLabel(announcementToDelete)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Published</p>
+
+                  <p className="text-sm">
+                    {announcementToDelete.publishedAt
+                      ? new Date(
+                          announcementToDelete.publishedAt,
+                        ).toLocaleString()
+                      : "—"}
+                  </p>
+                </div>
               </div>
+            )}
 
-              <div>
-                <p className="text-xs text-muted-foreground">Course Offering</p>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDeleting}
+                onClick={() => handleDeleteDialogChange(false)}
+              >
+                Cancel
+              </Button>
 
-                <p className="text-sm">
-                  {getCourseLabel(announcementToDelete)}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-muted-foreground">Published</p>
-
-                <p className="text-sm">
-                  {announcementToDelete.publishedAt
-                    ? new Date(
-                        announcementToDelete.publishedAt,
-                      ).toLocaleString()
-                    : "—"}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isDeleting}
-              onClick={() => handleDeleteDialogChange(false)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={handleDeleteConfirm}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting}
+                onClick={handleDeleteConfirm}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

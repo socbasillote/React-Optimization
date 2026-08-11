@@ -1,5 +1,7 @@
 import ApiError from "../../../utils/ApiError.js";
 
+import Enrollment from "../../academics/enrollment/enrollment.model.js";
+
 import ClassSchedule from "./classSchedule.model.js";
 import CourseOffering from "../course-offering/courseOffering.model.js";
 
@@ -69,6 +71,8 @@ export const getClassSchedules = async ({
   courseOffering,
   day,
   room,
+  studentId,
+  userRole,
 }) => {
   page = Number(page);
   limit = Number(limit);
@@ -85,6 +89,20 @@ export const getClassSchedules = async ({
 
   if (room) {
     filter.room = room;
+  }
+
+  if (userRole === "STUDENT") {
+    const enrollments = await Enrollment.find({
+      student: studentId,
+    }).select("courseOffering");
+
+    const courseOfferingIds = enrollments.map(
+      (enrollment) => enrollment.courseOffering,
+    );
+
+    filter.courseOffering = {
+      $in: courseOfferingIds,
+    };
   }
 
   const skip = (page - 1) * limit;

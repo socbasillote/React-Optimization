@@ -15,18 +15,20 @@ import {
 } from "lucide-react";
 
 export const navigation = [
+  // =========================
+  // DASHBOARD
+  // =========================
+
   {
     title: "Dashboard",
     url: "/app/dashboard",
     icon: LayoutDashboard,
     roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
-  {
-    title: "Users",
-    url: "/app/users",
-    icon: Users,
-    roles: ["SUPER_ADMIN", "ADMIN"],
-  },
+
+  // =========================
+  // ADMIN / ORGANIZATION
+  // =========================
 
   {
     title: "Organization",
@@ -84,6 +86,10 @@ export const navigation = [
     ],
   },
 
+  // =========================
+  // PEOPLE
+  // =========================
+
   {
     title: "Students",
     url: "/app/students",
@@ -98,6 +104,10 @@ export const navigation = [
     roles: ["SUPER_ADMIN", "ADMIN"],
   },
 
+  // =========================
+  // ACADEMIC MANAGEMENT
+  // =========================
+
   {
     title: "Course Offerings",
     url: "/app/course-offerings",
@@ -109,7 +119,7 @@ export const navigation = [
     title: "Enrollment",
     url: "/app/enrollments",
     icon: ClipboardList,
-    roles: ["SUPER_ADMIN", "ADMIN", "STUDENT"],
+    roles: ["SUPER_ADMIN", "ADMIN", "FACULTY"],
   },
 
   {
@@ -123,28 +133,28 @@ export const navigation = [
     title: "Attendance",
     url: "/app/attendance",
     icon: ClipboardCheck,
-    roles: ["FACULTY", "STUDENT"],
+    roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
 
   {
     title: "Grades",
     url: "/app/grades",
     icon: Award,
-    roles: ["FACULTY", "STUDENT"],
+    roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
 
   {
     title: "Assignments",
     url: "/app/assignments",
     icon: FileText,
-    roles: ["FACULTY", "STUDENT"],
+    roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
 
   {
     title: "Quizzes",
     url: "/app/quizzes",
     icon: ClipboardPen,
-    roles: ["FACULTY", "STUDENT"],
+    roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
 
   {

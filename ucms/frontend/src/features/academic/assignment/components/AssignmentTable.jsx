@@ -58,6 +58,14 @@ export default function AssignmentTable({
   onEdit,
   onDelete,
 }) {
+  const canEdit = typeof onEdit === "function";
+
+  const canDelete = typeof onDelete === "function";
+
+  const showActions = canEdit || canDelete;
+
+  const columnCount = showActions ? 8 : 7;
+
   return (
     <div className="overflow-hidden rounded-lg border">
       <div className="overflow-x-auto">
@@ -78,21 +86,23 @@ export default function AssignmentTable({
 
               <TableHead>Max Score</TableHead>
 
-              <TableHead className="w-[100px]">Actions</TableHead>
+              {showActions && (
+                <TableHead className="w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={columnCount} className="h-24 text-center">
                   Loading assignments...
                 </TableCell>
               </TableRow>
             ) : assignments.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={columnCount}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No assignments found.
@@ -138,33 +148,39 @@ export default function AssignmentTable({
 
                     <TableCell>{assignment.maxScore}</TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onEdit(assignment)}
-                        >
-                          <Pencil />
+                    {showActions && (
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {canEdit && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onEdit(assignment)}
+                            >
+                              <Pencil />
 
-                          <span className="sr-only">Edit assignment</span>
-                        </Button>
+                              <span className="sr-only">Edit assignment</span>
+                            </Button>
+                          )}
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onDelete(assignment)}
-                        >
-                          <Trash2 />
+                          {canDelete && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onDelete(assignment)}
+                            >
+                              <Trash2 />
 
-                          <span className="sr-only">Delete assignment</span>
-                        </Button>
-                      </div>
-                    </TableCell>
+                              <span className="sr-only">Delete assignment</span>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })

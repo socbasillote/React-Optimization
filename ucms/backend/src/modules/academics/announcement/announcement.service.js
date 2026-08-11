@@ -3,6 +3,8 @@ import ApiError from "../../../utils/ApiError.js";
 import Announcement from "./announcement.model.js";
 import CourseOffering from "../course-offering/courseOffering.model.js";
 
+import Enrollment from "../enrollment/enrollment.model.js";
+
 export const createAnnouncement = async (payload) => {
   const courseOffering = await CourseOffering.findById(payload.courseOffering);
 
@@ -17,6 +19,8 @@ export const getAnnouncements = async ({
   page = 1,
   limit = 10,
   courseOffering,
+  studentId,
+  userRole,
 }) => {
   page = Number(page);
   limit = Number(limit);
@@ -25,6 +29,20 @@ export const getAnnouncements = async ({
 
   if (courseOffering) {
     filter.courseOffering = courseOffering;
+  }
+
+  if (userRole === "STUDENT") {
+    const enrollments = await Enrollment.find({
+      student: studentId,
+    }).select("courseOffering");
+
+    const courseOfferingIds = enrollments.map(
+      (enrollment) => enrollment.courseOffering,
+    );
+
+    filter.courseOffering = {
+      $in: courseOfferingIds,
+    };
   }
 
   const skip = (page - 1) * limit;

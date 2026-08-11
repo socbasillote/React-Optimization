@@ -23,7 +23,7 @@ router.post(
 
 router.get(
   "/",
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.FACULTY),
+  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.FACULTY, ROLES.STUDENT),
   gradeController.getGrades,
 );
 

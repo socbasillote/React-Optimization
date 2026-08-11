@@ -11,14 +11,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const getCourseOffering = (quiz) => quiz?.courseOffering;
+const getCourseOffering = (quiz) => {
+  return quiz?.courseOffering;
+};
 
-const getSubject = (quiz) =>
-  getCourseOffering(quiz)?.curriculumSubject?.subject;
+const getSubject = (quiz) => {
+  return getCourseOffering(quiz)?.curriculumSubject?.subject;
+};
 
-const getFaculty = (quiz) => getCourseOffering(quiz)?.faculty?.user;
+const getFaculty = (quiz) => {
+  return getCourseOffering(quiz)?.faculty?.user;
+};
 
-const getSection = (quiz) => getCourseOffering(quiz)?.section;
+const getSection = (quiz) => {
+  return getCourseOffering(quiz)?.section;
+};
 
 const formatFacultyName = (quiz) => {
   const faculty = getFaculty(quiz);
@@ -51,6 +58,14 @@ export default function QuizTable({
   onEdit,
   onDelete,
 }) {
+  const canEdit = typeof onEdit === "function";
+
+  const canDelete = typeof onDelete === "function";
+
+  const showActions = canEdit || canDelete;
+
+  const columnCount = showActions ? 9 : 8;
+
   return (
     <div className="overflow-hidden rounded-lg border">
       <div className="overflow-x-auto">
@@ -73,21 +88,23 @@ export default function QuizTable({
 
               <TableHead>Max Score</TableHead>
 
-              <TableHead className="w-[100px]">Actions</TableHead>
+              {showActions && (
+                <TableHead className="w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={columnCount} className="h-24 text-center">
                   Loading quizzes...
                 </TableCell>
               </TableRow>
             ) : quizzes.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={columnCount}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No quizzes found.
@@ -135,33 +152,39 @@ export default function QuizTable({
 
                     <TableCell>{quiz.maxScore}</TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onEdit(quiz)}
-                        >
-                          <Pencil />
+                    {showActions && (
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {canEdit && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onEdit(quiz)}
+                            >
+                              <Pencil />
 
-                          <span className="sr-only">Edit quiz</span>
-                        </Button>
+                              <span className="sr-only">Edit quiz</span>
+                            </Button>
+                          )}
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onDelete(quiz)}
-                        >
-                          <Trash2 />
+                          {canDelete && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onDelete(quiz)}
+                            >
+                              <Trash2 />
 
-                          <span className="sr-only">Delete quiz</span>
-                        </Button>
-                      </div>
-                    </TableCell>
+                              <span className="sr-only">Delete quiz</span>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })

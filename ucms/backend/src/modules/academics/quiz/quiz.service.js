@@ -3,6 +3,8 @@ import ApiError from "../../../utils/ApiError.js";
 import Quiz from "./quiz.model.js";
 import CourseOffering from "../course-offering/courseOffering.model.js";
 
+import Enrollment from "../enrollment/enrollment.model.js";
+
 export const createQuiz = async (payload) => {
   const courseOffering = await CourseOffering.findById(payload.courseOffering);
 
@@ -25,7 +27,13 @@ export const createQuiz = async (payload) => {
   return Quiz.create(payload);
 };
 
-export const getQuizzes = async ({ page = 1, limit = 10, courseOffering }) => {
+export const getQuizzes = async ({
+  page = 1,
+  limit = 10,
+  courseOffering,
+  studentId,
+  userRole,
+}) => {
   page = Number(page);
   limit = Number(limit);
 
@@ -33,6 +41,20 @@ export const getQuizzes = async ({ page = 1, limit = 10, courseOffering }) => {
 
   if (courseOffering) {
     filter.courseOffering = courseOffering;
+  }
+
+  if (userRole === "STUDENT") {
+    const enrollments = await Enrollment.find({
+      student: studentId,
+    }).select("courseOffering");
+
+    const courseOfferingIds = enrollments.map(
+      (enrollment) => enrollment.courseOffering,
+    );
+
+    filter.courseOffering = {
+      $in: courseOfferingIds,
+    };
   }
 
   const skip = (page - 1) * limit;

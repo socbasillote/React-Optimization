@@ -50,6 +50,14 @@ export default function AttendanceTable({
   onEdit,
   onDelete,
 }) {
+  const canEdit = typeof onEdit === "function";
+
+  const canDelete = typeof onDelete === "function";
+
+  const showActions = canEdit || canDelete;
+
+  const columnCount = showActions ? 7 : 6;
+
   return (
     <div className="overflow-hidden rounded-lg border">
       <div className="overflow-x-auto">
@@ -57,26 +65,34 @@ export default function AttendanceTable({
           <TableHeader>
             <TableRow>
               <TableHead>Student</TableHead>
+
               <TableHead>Subject</TableHead>
+
               <TableHead>Section</TableHead>
+
               <TableHead>Date</TableHead>
+
               <TableHead>Status</TableHead>
+
               <TableHead>Remarks</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+
+              {showActions && (
+                <TableHead className="w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={columnCount} className="h-24 text-center">
                   Loading attendance...
                 </TableCell>
               </TableRow>
             ) : attendances.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={columnCount}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No attendance records found.
@@ -116,33 +132,39 @@ export default function AttendanceTable({
                       {attendance.remarks || "—"}
                     </TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onEdit(attendance)}
-                        >
-                          <Pencil />
+                    {showActions && (
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {canEdit && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onEdit(attendance)}
+                            >
+                              <Pencil />
 
-                          <span className="sr-only">Edit attendance</span>
-                        </Button>
+                              <span className="sr-only">Edit attendance</span>
+                            </Button>
+                          )}
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          disabled={isDeleting}
-                          onClick={() => onDelete(attendance)}
-                        >
-                          <Trash2 />
+                          {canDelete && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              onClick={() => onDelete(attendance)}
+                            >
+                              <Trash2 />
 
-                          <span className="sr-only">Delete attendance</span>
-                        </Button>
-                      </div>
-                    </TableCell>
+                              <span className="sr-only">Delete attendance</span>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })

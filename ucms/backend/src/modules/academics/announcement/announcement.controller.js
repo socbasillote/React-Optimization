@@ -1,6 +1,9 @@
 import * as announcementService from "./announcement.service.js";
 import sendResponse from "../../../utils/sendResponse.js";
 
+import * as studentService from "../../students/student.service.js";
+import { ROLES } from "../../../constants/roles.js";
+
 export const createAnnouncement = async (req, res) => {
   const announcement = await announcementService.createAnnouncement(req.body);
 
@@ -12,7 +15,19 @@ export const createAnnouncement = async (req, res) => {
 };
 
 export const getAnnouncements = async (req, res) => {
-  const result = await announcementService.getAnnouncements(req.query);
+  let studentId;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
+  const result = await announcementService.getAnnouncements({
+    ...req.query,
+    studentId,
+    userRole: req.user.role,
+  });
 
   sendResponse(res, {
     message: "Announcements retrieved successfully.",

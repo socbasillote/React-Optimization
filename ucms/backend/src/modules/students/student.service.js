@@ -197,17 +197,38 @@ export const deleteStudent = async (id) => {
 };
 
 export const getCurrentStudent = async (userId) => {
+  console.log("===== GET CURRENT STUDENT =====");
+  console.log("userId:", userId);
+  console.log("userId type:", typeof userId);
+
   const student = await Student.findOne({
     user: userId,
-  })
-    .populate("user", "firstName middleName lastName email phone avatar")
-    .populate("program", "name code")
-    .populate("curriculum", "name")
-    .populate("section", "name yearLevel");
+  });
+
+  console.log("student:", student);
 
   if (!student) {
     throw new ApiError(404, "Student profile not found.");
   }
+
+  await student.populate([
+    {
+      path: "user",
+      select: "firstName middleName lastName email phone avatar",
+    },
+    {
+      path: "program",
+      select: "name code",
+    },
+    {
+      path: "curriculum",
+      select: "name",
+    },
+    {
+      path: "section",
+      select: "name yearLevel",
+    },
+  ]);
 
   return student;
 };

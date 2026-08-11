@@ -31,14 +31,33 @@ export const getGrades = async ({
   limit = 10,
   enrollment,
   remarks,
+  studentId,
+  userRole,
 }) => {
   page = Number(page);
   limit = Number(limit);
 
   const filter = {};
 
-  if (enrollment) filter.enrollment = enrollment;
-  if (remarks) filter.remarks = remarks;
+  if (enrollment) {
+    filter.enrollment = enrollment;
+  }
+
+  if (remarks) {
+    filter.remarks = remarks;
+  }
+
+  if (userRole === "STUDENT") {
+    const enrollments = await Enrollment.find({
+      student: studentId,
+    }).select("_id");
+
+    const enrollmentIds = enrollments.map((item) => item._id);
+
+    filter.enrollment = {
+      $in: enrollmentIds,
+    };
+  }
 
   const skip = (page - 1) * limit;
 
@@ -79,7 +98,9 @@ export const getGrades = async ({
           },
         ],
       })
-      .sort({ createdAt: -1 })
+      .sort({
+        createdAt: -1,
+      })
       .skip(skip)
       .limit(limit),
 

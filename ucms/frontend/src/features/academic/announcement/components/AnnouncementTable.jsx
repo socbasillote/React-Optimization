@@ -41,6 +41,14 @@ export default function AnnouncementTable({
   onEdit,
   onDelete,
 }) {
+  const canEdit = typeof onEdit === "function";
+
+  const canDelete = typeof onDelete === "function";
+
+  const showActions = canEdit || canDelete;
+
+  const columnCount = showActions ? 4 : 3;
+
   const getCourseLabel = (announcement) => {
     const id = getCourseOfferingId(announcement);
 
@@ -65,21 +73,23 @@ export default function AnnouncementTable({
 
               <TableHead>Published</TableHead>
 
-              <TableHead className="w-[100px]">Actions</TableHead>
+              {showActions && (
+                <TableHead className="w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={columnCount} className="h-24 text-center">
                   Loading announcements...
                 </TableCell>
               </TableRow>
             ) : announcements.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={columnCount}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No announcements found.
@@ -106,33 +116,39 @@ export default function AnnouncementTable({
                     {formatDateTime(announcement.publishedAt)}
                   </TableCell>
 
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        disabled={isDeleting}
-                        onClick={() => onEdit(announcement)}
-                      >
-                        <Pencil />
+                  {showActions && (
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {canEdit && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={isDeleting}
+                            onClick={() => onEdit(announcement)}
+                          >
+                            <Pencil />
 
-                        <span className="sr-only">Edit announcement</span>
-                      </Button>
+                            <span className="sr-only">Edit announcement</span>
+                          </Button>
+                        )}
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        disabled={isDeleting}
-                        onClick={() => onDelete(announcement)}
-                      >
-                        <Trash2 />
+                        {canDelete && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={isDeleting}
+                            onClick={() => onDelete(announcement)}
+                          >
+                            <Trash2 />
 
-                        <span className="sr-only">Delete announcement</span>
-                      </Button>
-                    </div>
-                  </TableCell>
+                            <span className="sr-only">Delete announcement</span>
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

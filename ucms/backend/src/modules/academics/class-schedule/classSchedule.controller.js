@@ -1,6 +1,12 @@
 import * as classScheduleService from "./classSchedule.service.js";
 import sendResponse from "../../../utils/sendResponse.js";
 
+import ApiError from "../../../utils/ApiError.js";
+
+import * as studentService from "../../students/student.service.js";
+
+import { ROLES } from "../../../constants/roles.js";
+
 export const createClassSchedule = async (req, res) => {
   const classSchedule = await classScheduleService.createClassSchedule(
     req.body,
@@ -14,7 +20,19 @@ export const createClassSchedule = async (req, res) => {
 };
 
 export const getClassSchedules = async (req, res) => {
-  const result = await classScheduleService.getClassSchedules(req.query);
+  let studentId = null;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
+  const result = await classScheduleService.getClassSchedules({
+    ...req.query,
+    studentId,
+    userRole: req.user.role,
+  });
 
   sendResponse(res, {
     message: "Class schedules retrieved successfully.",

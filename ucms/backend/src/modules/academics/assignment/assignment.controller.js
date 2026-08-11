@@ -1,6 +1,10 @@
 import * as assignmentService from "./assignment.service.js";
 import sendResponse from "../../../utils/sendResponse.js";
 
+import * as studentService from "../../students/student.service.js";
+
+import { ROLES } from "../../../constants/roles.js";
+
 export const createAssignment = async (req, res) => {
   const assignment = await assignmentService.createAssignment(req.body);
 
@@ -12,7 +16,19 @@ export const createAssignment = async (req, res) => {
 };
 
 export const getAssignments = async (req, res) => {
-  const result = await assignmentService.getAssignments(req.query);
+  let studentId;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
+  const result = await assignmentService.getAssignments({
+    ...req.query,
+    studentId,
+    userRole: req.user.role,
+  });
 
   sendResponse(res, {
     message: "Assignments retrieved successfully.",

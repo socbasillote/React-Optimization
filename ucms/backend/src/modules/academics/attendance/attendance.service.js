@@ -5,6 +5,8 @@ import Attendance from "./attendance.model.js";
 import Enrollment from "../enrollment/enrollment.model.js";
 import ClassSchedule from "../class-schedule/classSchedule.model.js";
 
+import { ROLES } from "../../../constants/roles.js";
+
 export const DAYS = [
   "SUNDAY",
   "MONDAY",
@@ -71,6 +73,8 @@ export const getAttendances = async ({
   classSchedule,
   date,
   status,
+  studentId,
+  userRole,
 }) => {
   page = Number(page);
   limit = Number(limit);
@@ -91,6 +95,18 @@ export const getAttendances = async ({
 
   if (status) {
     filter.status = status;
+  }
+
+  if (userRole === ROLES.STUDENT) {
+    const enrollments = await Enrollment.find({
+      student: studentId,
+    }).select("_id");
+
+    const enrollmentIds = enrollments.map((enrollment) => enrollment._id);
+
+    filter.enrollment = {
+      $in: enrollmentIds,
+    };
   }
 
   const skip = (page - 1) * limit;

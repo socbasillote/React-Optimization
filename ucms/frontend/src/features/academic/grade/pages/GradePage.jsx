@@ -17,6 +17,8 @@ import GradeTable from "../components/GradeTable";
 
 import { useDeleteGradeMutation, useGetGradesQuery } from "../api/gradeApi";
 
+import { useGetCurrentUserQuery } from "@/features/auth/api/authApi";
+
 const getStudentName = (grade) => {
   const user = grade?.enrollment?.student?.user;
 
@@ -61,6 +63,18 @@ export default function GradePage() {
 
   const [gradeToDelete, setGradeToDelete] = useState(null);
 
+  const { data: currentUserData } = useGetCurrentUserQuery();
+
+  const role = currentUserData?.data?.role;
+
+  const canCreate =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canEdit =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canDelete = role === "SUPER_ADMIN" || role === "ADMIN";
+
   const { data, isLoading } = useGetGradesQuery({
     page,
     limit: 10,
@@ -77,22 +91,34 @@ export default function GradePage() {
   };
 
   const handleCreate = () => {
+    if (!canCreate) {
+      return;
+    }
+
     setSelectedGrade(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (grade) => {
+    if (!canEdit) {
+      return;
+    }
+
     setSelectedGrade(grade);
     setDialogOpen(true);
   };
 
   const handleDelete = (grade) => {
+    if (!canDelete) {
+      return;
+    }
+
     setGradeToDelete(grade);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!gradeToDelete) {
+    if (!canDelete || !gradeToDelete) {
       return;
     }
 
@@ -129,22 +155,26 @@ export default function GradePage() {
           <h1 className="text-2xl font-semibold tracking-tight">Grades</h1>
 
           <p className="text-sm text-muted-foreground">
-            Manage student grades and final results.
+            {canCreate || canEdit
+              ? "Manage student grades and final results."
+              : "View your grades and final results."}
           </p>
         </div>
 
-        <Button onClick={handleCreate}>
-          <Plus />
-          Record Grade
-        </Button>
+        {canCreate && (
+          <Button onClick={handleCreate}>
+            <Plus />
+            Record Grade
+          </Button>
+        )}
       </div>
 
       <GradeTable
         grades={grades}
         isLoading={isLoading}
         isDeleting={isDeleting}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={canEdit ? handleEdit : undefined}
+        onDelete={canDelete ? handleDelete : undefined}
       />
 
       {meta.totalPages > 1 && (
@@ -175,66 +205,72 @@ export default function GradePage() {
         </div>
       )}
 
-      <GradeDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogChange}
-        grade={selectedGrade}
-      />
+      {canCreate || canEdit ? (
+        <GradeDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogChange}
+          grade={selectedGrade}
+        />
+      ) : null}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete Grade</DialogTitle>
+      {canDelete && (
+        <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Grade</DialogTitle>
 
-            <DialogDescription>
-              Are you sure you want to delete this grade record? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
+              <DialogDescription>
+                Are you sure you want to delete this grade record? This action
+                cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
 
-          {gradeToDelete && (
-            <div className="space-y-3 rounded-md border bg-muted/50 p-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Student</p>
+            {gradeToDelete && (
+              <div className="space-y-3 rounded-md border bg-muted/50 p-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Student</p>
 
-                <p className="font-medium">{getStudentName(gradeToDelete)}</p>
+                  <p className="font-medium">{getStudentName(gradeToDelete)}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Student Number
+                  </p>
+
+                  <p className="text-sm">{getStudentNumber(gradeToDelete)}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Subject</p>
+
+                  <p className="text-sm">{getSubjectLabel(gradeToDelete)}</p>
+                </div>
               </div>
+            )}
 
-              <div>
-                <p className="text-xs text-muted-foreground">Student Number</p>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDeleting}
+                onClick={() => handleDeleteDialogChange(false)}
+              >
+                Cancel
+              </Button>
 
-                <p className="text-sm">{getStudentNumber(gradeToDelete)}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-muted-foreground">Subject</p>
-
-                <p className="text-sm">{getSubjectLabel(gradeToDelete)}</p>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isDeleting}
-              onClick={() => handleDeleteDialogChange(false)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={handleDeleteConfirm}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting}
+                onClick={handleDeleteConfirm}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

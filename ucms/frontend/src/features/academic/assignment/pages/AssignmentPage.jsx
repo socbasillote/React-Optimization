@@ -20,6 +20,8 @@ import {
 import AssignmentDialog from "../components/AssignmentDialog";
 import AssignmentTable from "../components/AssignmentTable";
 
+import { useGetCurrentUserQuery } from "@/features/auth/api/authApi";
+
 const getSubjectLabel = (assignment) => {
   const subject = assignment?.courseOffering?.curriculumSubject?.subject;
 
@@ -55,6 +57,19 @@ export default function AssignmentPage() {
 
   const [assignmentToDelete, setAssignmentToDelete] = useState(null);
 
+  const { data: currentUserData } = useGetCurrentUserQuery();
+
+  const role = currentUserData?.data?.role;
+
+  const canCreate =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canEdit =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canDelete =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
   const { data, isLoading } = useGetAssignmentsQuery({
     page,
     limit: 10,
@@ -72,25 +87,34 @@ export default function AssignmentPage() {
   };
 
   const handleCreate = () => {
-    setSelectedAssignment(null);
+    if (!canCreate) {
+      return;
+    }
 
+    setSelectedAssignment(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (assignment) => {
-    setSelectedAssignment(assignment);
+    if (!canEdit) {
+      return;
+    }
 
+    setSelectedAssignment(assignment);
     setDialogOpen(true);
   };
 
   const handleDelete = (assignment) => {
-    setAssignmentToDelete(assignment);
+    if (!canDelete) {
+      return;
+    }
 
+    setAssignmentToDelete(assignment);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!assignmentToDelete) {
+    if (!canDelete || !assignmentToDelete) {
       return;
     }
 
@@ -127,22 +151,26 @@ export default function AssignmentPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Assignments</h1>
 
           <p className="text-sm text-muted-foreground">
-            Manage assignments for your course offerings.
+            {canCreate || canEdit
+              ? "Manage assignments for your course offerings."
+              : "View assignments for your courses."}
           </p>
         </div>
 
-        <Button onClick={handleCreate}>
-          <Plus />
-          Create Assignment
-        </Button>
+        {canCreate && (
+          <Button onClick={handleCreate}>
+            <Plus />
+            Create Assignment
+          </Button>
+        )}
       </div>
 
       <AssignmentTable
         assignments={assignments}
         isLoading={isLoading}
         isDeleting={isDeleting}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={canEdit ? handleEdit : undefined}
+        onDelete={canDelete ? handleDelete : undefined}
       />
 
       {meta.totalPages > 1 && (
@@ -173,72 +201,82 @@ export default function AssignmentPage() {
         </div>
       )}
 
-      <AssignmentDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogChange}
-        assignment={selectedAssignment}
-      />
+      {canCreate || canEdit ? (
+        <AssignmentDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogChange}
+          assignment={selectedAssignment}
+        />
+      ) : null}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete Assignment</DialogTitle>
+      {canDelete && (
+        <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Assignment</DialogTitle>
 
-            <DialogDescription>
-              Are you sure you want to delete this assignment? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
+              <DialogDescription>
+                Are you sure you want to delete this assignment? This action
+                cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
 
-          {assignmentToDelete && (
-            <div className="space-y-3 rounded-md border bg-muted/50 p-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Assignment</p>
+            {assignmentToDelete && (
+              <div className="space-y-3 rounded-md border bg-muted/50 p-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Assignment</p>
 
-                <p className="font-medium">{assignmentToDelete.title}</p>
+                  <p className="font-medium">{assignmentToDelete.title}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Course</p>
+
+                  <p className="text-sm">
+                    {getSubjectLabel(assignmentToDelete)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Section</p>
+
+                  <p className="text-sm">
+                    {getSectionName(assignmentToDelete)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Faculty</p>
+
+                  <p className="text-sm">
+                    {getFacultyName(assignmentToDelete)}
+                  </p>
+                </div>
               </div>
+            )}
 
-              <div>
-                <p className="text-xs text-muted-foreground">Course</p>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDeleting}
+                onClick={() => handleDeleteDialogChange(false)}
+              >
+                Cancel
+              </Button>
 
-                <p className="text-sm">{getSubjectLabel(assignmentToDelete)}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-muted-foreground">Section</p>
-
-                <p className="text-sm">{getSectionName(assignmentToDelete)}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-muted-foreground">Faculty</p>
-
-                <p className="text-sm">{getFacultyName(assignmentToDelete)}</p>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isDeleting}
-              onClick={() => handleDeleteDialogChange(false)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={handleDeleteConfirm}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting}
+                onClick={handleDeleteConfirm}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

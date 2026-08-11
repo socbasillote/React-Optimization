@@ -4,7 +4,7 @@ import GuestLayout from "@/layouts/GuestLayout";
 import ProtectedLayout from "@/layouts/ProtectedLayout";
 
 import LoginPage from "@/features/auth/pages/LoginPage";
-import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+
 import { AppLayout } from "@/components/layout";
 import CampusPage from "@/features/organization/campus/pages/CampusPage";
 import CollegePage from "@/features/organization/college/page/CollegePage";
@@ -27,6 +27,7 @@ import GradePage from "@/features/academic/grade/pages/GradePage";
 import AssignmentPage from "@/features/academic/assignment/pages/AssignmentPage";
 import QuizPage from "@/features/academic/quiz/pages/QuizPage";
 import AnnouncementPage from "@/features/academic/announcement/pages/AnnouncementPage";
+import RoleDashboardPage from "@/features/dashboard/pages/RolesDashboardpage";
 
 const router = createBrowserRouter([
   {
@@ -48,7 +49,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "dashboard",
-            element: <DashboardPage />,
+            element: <RoleDashboardPage />,
             handle: {
               title: "Dashboard",
               breadcrumb: [{ label: "Dashboard" }],
@@ -194,8 +195,8 @@ const router = createBrowserRouter([
             path: "grades",
             element: <GradePage />,
             handle: {
-              title: "Grade",
-              breadcrumb: [{ label: "Grade" }],
+              title: "Grades",
+              breadcrumb: [{ label: "Grades" }],
             },
           },
           {

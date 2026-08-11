@@ -18,6 +18,8 @@ import ClassScheduleDialog from "../components/ClassScheduleDialog";
 
 import { getErrorMessage } from "@/lib/getErrorMessage";
 
+import { useGetCurrentUserQuery } from "@/features/auth/api/authApi";
+
 export default function ClassSchedulePage() {
   const [page, setPage] = useState(1);
   const [room, setRoom] = useState("");
@@ -26,6 +28,13 @@ export default function ClassSchedulePage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [selectedClassSchedule, setSelectedClassSchedule] = useState(null);
+
+  const { data: currentUserData } = useGetCurrentUserQuery();
+
+  const user = currentUserData?.data;
+  const role = user?.role;
+
+  const canManage = role === "SUPER_ADMIN" || role === "ADMIN";
 
   const { data, isLoading } = useGetClassSchedulesQuery({
     page,
@@ -46,22 +55,30 @@ export default function ClassSchedulePage() {
   };
 
   const handleCreate = () => {
+    if (!canManage) return;
+
     setSelectedClassSchedule(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (classSchedule) => {
+    if (!canManage) return;
+
     setSelectedClassSchedule(classSchedule);
     setDialogOpen(true);
   };
 
   const handleDeleteRequest = (classSchedule) => {
+    if (!canManage) return;
+
     setSelectedClassSchedule(classSchedule);
     setDeleteOpen(true);
   };
 
   const handleDelete = async () => {
-    if (!selectedClassSchedule) return;
+    if (!canManage || !selectedClassSchedule) {
+      return;
+    }
 
     try {
       await deleteClassSchedule(selectedClassSchedule._id).unwrap();
@@ -79,7 +96,11 @@ export default function ClassSchedulePage() {
     <div className="space-y-6">
       <PageHeader
         title="Class Schedules"
-        description="Manage class schedules and room assignments."
+        description={
+          canManage
+            ? "Manage class schedules and room assignments."
+            : "View your class schedules and room assignments."
+        }
       />
 
       <SearchToolbar
@@ -87,14 +108,16 @@ export default function ClassSchedulePage() {
         onChange={handleSearch}
         placeholder="Search by room..."
       >
-        <Button onClick={handleCreate}>New Class Schedule</Button>
+        {canManage && (
+          <Button onClick={handleCreate}>New Class Schedule</Button>
+        )}
       </SearchToolbar>
 
       <ClassScheduleTable
         classSchedules={classSchedules}
         loading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDeleteRequest}
+        onEdit={canManage ? handleEdit : undefined}
+        onDelete={canManage ? handleDeleteRequest : undefined}
       />
 
       <AppPagination
@@ -103,26 +126,35 @@ export default function ClassSchedulePage() {
         onPageChange={setPage}
       />
 
-      <ClassScheduleDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
+      {canManage && (
+        <>
+          <ClassScheduleDialog
+            open={dialogOpen}
+            onOpenChange={(open) => {
+              setDialogOpen(open);
 
-          if (!open) {
-            setSelectedClassSchedule(null);
-          }
-        }}
-        classSchedule={selectedClassSchedule}
-      />
+              if (!open) {
+                setSelectedClassSchedule(null);
+              }
+            }}
+            classSchedule={selectedClassSchedule}
+          />
 
-      <ConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title="Delete Class Schedule"
-        description={`Are you sure you want to delete the ${selectedClassSchedule?.day ?? ""} schedule for "${selectedClassSchedule?.courseOffering?.curriculumSubject?.subject?.code ?? "this course"}"? This action cannot be undone.`}
-        loading={deleting}
-        onConfirm={handleDelete}
-      />
+          <ConfirmDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            title="Delete Class Schedule"
+            description={`Are you sure you want to delete the ${
+              selectedClassSchedule?.day ?? ""
+            } schedule for "${
+              selectedClassSchedule?.courseOffering?.curriculumSubject?.subject
+                ?.code ?? "this course"
+            }"? This action cannot be undone.`}
+            loading={deleting}
+            onConfirm={handleDelete}
+          />
+        </>
+      )}
     </div>
   );
 }

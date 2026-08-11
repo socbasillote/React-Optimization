@@ -1,6 +1,9 @@
 import * as attendanceService from "./attendance.service.js";
 import sendResponse from "../../../utils/sendResponse.js";
 
+import * as studentService from "../../students/student.service.js";
+import { ROLES } from "../../../constants/roles.js";
+
 export const createAttendance = async (req, res) => {
   const attendance = await attendanceService.createAttendance(req.body);
 
@@ -12,7 +15,19 @@ export const createAttendance = async (req, res) => {
 };
 
 export const getAttendances = async (req, res) => {
-  const result = await attendanceService.getAttendances(req.query);
+  let studentId;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
+  const result = await attendanceService.getAttendances({
+    ...req.query,
+    studentId,
+    userRole: req.user.role,
+  });
 
   sendResponse(res, {
     message: "Attendances retrieved successfully.",

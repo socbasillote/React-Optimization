@@ -27,6 +27,8 @@ import {
 
 import { useGetClassSchedulesQuery } from "@/features/academic/class-schedule/api/classScheduleApi";
 
+import { useGetCurrentUserQuery } from "@/features/auth/api/authApi";
+
 const getEnrollmentLabel = (enrollment) => {
   const student = enrollment?.student;
   const user = student?.user;
@@ -96,22 +98,46 @@ export default function AttendancePage() {
 
   const [deleteStudent, setDeleteStudent] = useState(null);
 
+  const { data: currentUserData } = useGetCurrentUserQuery();
+
+  const role = currentUserData?.data?.role;
+
+  const canCreate =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canEdit =
+    role === "SUPER_ADMIN" || role === "ADMIN" || role === "FACULTY";
+
+  const canDelete = role === "SUPER_ADMIN" || role === "ADMIN";
+
+  const canManage = canCreate || canEdit || canDelete;
+
   const { data, isLoading } = useGetAttendancesQuery({
     page,
     limit: 10,
   });
 
   const { data: enrollmentData, isLoading: enrollmentLoading } =
-    useGetEnrollmentsQuery({
-      page: 1,
-      limit: 100,
-    });
+    useGetEnrollmentsQuery(
+      {
+        page: 1,
+        limit: 100,
+      },
+      {
+        skip: !canCreate && !canEdit,
+      },
+    );
 
   const { data: classScheduleData, isLoading: classScheduleLoading } =
-    useGetClassSchedulesQuery({
-      page: 1,
-      limit: 100,
-    });
+    useGetClassSchedulesQuery(
+      {
+        page: 1,
+        limit: 100,
+      },
+      {
+        skip: !canCreate && !canEdit,
+      },
+    );
 
   const [getEnrollmentById, { isLoading: isLoadingDeleteStudent }] =
     useLazyGetEnrollmentByIdQuery();
@@ -142,16 +168,28 @@ export default function AttendancePage() {
   }));
 
   const handleCreate = () => {
+    if (!canCreate) {
+      return;
+    }
+
     setSelectedAttendance(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (attendance) => {
+    if (!canEdit) {
+      return;
+    }
+
     setSelectedAttendance(attendance);
     setDialogOpen(true);
   };
 
   const handleDelete = async (attendance) => {
+    if (!canDelete) {
+      return;
+    }
+
     setAttendanceToDelete(attendance);
     setDeleteStudent(null);
     setDeleteDialogOpen(true);
@@ -175,7 +213,7 @@ export default function AttendancePage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!attendanceToDelete) {
+    if (!canDelete || !attendanceToDelete) {
       return;
     }
 
@@ -235,22 +273,26 @@ export default function AttendancePage() {
           <h1 className="text-2xl font-semibold tracking-tight">Attendance</h1>
 
           <p className="text-sm text-muted-foreground">
-            Manage student attendance records.
+            {canManage
+              ? "Manage student attendance records."
+              : "View your attendance records."}
           </p>
         </div>
 
-        <Button onClick={handleCreate}>
-          <Plus />
-          Record Attendance
-        </Button>
+        {canCreate && (
+          <Button onClick={handleCreate}>
+            <Plus />
+            Record Attendance
+          </Button>
+        )}
       </div>
 
       <AttendanceTable
         attendances={attendances}
         isLoading={isLoading}
         isDeleting={isDeleting}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={canEdit ? handleEdit : undefined}
+        onDelete={canDelete ? handleDelete : undefined}
       />
 
       {meta.totalPages > 1 && (
@@ -281,82 +323,86 @@ export default function AttendancePage() {
         </div>
       )}
 
-      <AttendanceDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogChange}
-        attendance={selectedAttendance}
-        enrollmentOptions={enrollmentOptions}
-        classScheduleOptions={classScheduleOptions}
-        enrollmentLoading={enrollmentLoading}
-        classScheduleLoading={classScheduleLoading}
-      />
+      {canCreate || canEdit ? (
+        <AttendanceDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogChange}
+          attendance={selectedAttendance}
+          enrollmentOptions={enrollmentOptions}
+          classScheduleOptions={classScheduleOptions}
+          enrollmentLoading={enrollmentLoading}
+          classScheduleLoading={classScheduleLoading}
+        />
+      ) : null}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete Attendance</DialogTitle>
+      {canDelete && (
+        <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Attendance</DialogTitle>
 
-            <DialogDescription>
-              Are you sure you want to delete this attendance record? This
-              action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
+              <DialogDescription>
+                Are you sure you want to delete this attendance record? This
+                action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
 
-          {attendanceToDelete && (
-            <div className="space-y-3 rounded-md border bg-muted/50 p-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Student</p>
-
-                {isLoadingDeleteStudent ? (
-                  <p className="text-sm text-muted-foreground">
-                    Loading student...
-                  </p>
-                ) : (
-                  <p className="font-medium">{getDeleteStudentName()}</p>
-                )}
-              </div>
-
-              {deleteStudent?.studentNumber && (
+            {attendanceToDelete && (
+              <div className="space-y-3 rounded-md border bg-muted/50 p-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">
-                    Student Number
-                  </p>
+                  <p className="text-xs text-muted-foreground">Student</p>
 
-                  <p className="text-sm">{deleteStudent.studentNumber}</p>
+                  {isLoadingDeleteStudent ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading student...
+                    </p>
+                  ) : (
+                    <p className="font-medium">{getDeleteStudentName()}</p>
+                  )}
                 </div>
-              )}
 
-              <div>
-                <p className="text-xs text-muted-foreground">Date</p>
+                {deleteStudent?.studentNumber && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Student Number
+                    </p>
 
-                <p className="text-sm">
-                  {formatAttendanceDate(attendanceToDelete.date)}
-                </p>
+                    <p className="text-sm">{deleteStudent.studentNumber}</p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Date</p>
+
+                  <p className="text-sm">
+                    {formatAttendanceDate(attendanceToDelete.date)}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isDeleting}
-              onClick={() => handleDeleteDialogChange(false)}
-            >
-              Cancel
-            </Button>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDeleting}
+                onClick={() => handleDeleteDialogChange(false)}
+              >
+                Cancel
+              </Button>
 
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isDeleting || isLoadingDeleteStudent}
-              onClick={handleDeleteConfirm}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting || isLoadingDeleteStudent}
+                onClick={handleDeleteConfirm}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
