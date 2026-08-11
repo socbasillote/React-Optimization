@@ -24,6 +24,7 @@ import EnrollmentPage from "@/features/academic/enrollment/pages/EnrollmentPage"
 import ClassSchedulePage from "@/features/academic/class-schedule/pages/ClassSchedulePage";
 import AttendancePage from "@/features/academic/attendance/pages/AttendancePage";
 import GradePage from "@/features/academic/grade/pages/GradePage";
+import AssignmentPage from "@/features/academic/assignment/pages/AssignmentPage";
 
 const router = createBrowserRouter([
   {
@@ -193,6 +194,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Grade",
               breadcrumb: [{ label: "Grade" }],
+            },
+          },
+          {
+            path: "assignments",
+            element: <AssignmentPage />,
+            handle: {
+              title: "Assignment",
+              breadcrumb: [{ label: "Assignment" }],
             },
           },
         ],
