@@ -22,6 +22,7 @@ import UserPage from "@/features/users/pages/UserPage";
 import StudentPage from "@/features/students/pages/StudentPage";
 import EnrollmentPage from "@/features/academic/enrollment/pages/EnrollmentPage";
 import ClassSchedulePage from "@/features/academic/class-schedule/pages/ClassSchedulePage";
+import AttendancePage from "@/features/academic/attendance/pages/AttendancePage";
 
 const router = createBrowserRouter([
   {
@@ -175,6 +176,14 @@ const router = createBrowserRouter([
             handle: {
               title: "Class Schedules",
               breadcrumb: [{ label: "Class Schedules" }],
+            },
+          },
+          {
+            path: "attendance",
+            element: <AttendancePage />,
+            handle: {
+              title: "Attendance",
+              breadcrumb: [{ label: "Attendance" }],
             },
           },
         ],

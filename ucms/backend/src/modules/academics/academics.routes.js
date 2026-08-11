@@ -29,7 +29,7 @@ router.use("/sections", sectionRoutes);
 router.use("/course-offerings", courseOfferingRoutes);
 router.use("/enrollments", enrollmentRoutes);
 router.use("/class-schedules", classScheduleRoutes);
-router.use("/attendances", attendanceRoutes);
+router.use("/attendance", attendanceRoutes);
 router.use("/grades", gradeRoutes);
 router.use("/assignments", assignmentRoutes);
 router.use("/assignment-submissions", assignmentSubmissionRoutes);

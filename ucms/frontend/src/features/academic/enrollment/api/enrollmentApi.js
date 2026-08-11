@@ -46,6 +46,7 @@ export const enrollmentApi = apiSlice.injectEndpoints({
 export const {
   useGetEnrollmentsQuery,
   useGetEnrollmentByIdQuery,
+  useLazyGetEnrollmentByIdQuery,
   useCreateEnrollmentMutation,
   useUpdateEnrollmentMutation,
   useDeleteEnrollmentMutation,

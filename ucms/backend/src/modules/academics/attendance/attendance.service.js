@@ -193,32 +193,47 @@ export const updateAttendance = async (id, payload) => {
     throw new ApiError(404, "Attendance not found.");
   }
 
-  if (payload.enrollment) {
-    const exists = await Enrollment.findById(payload.enrollment);
-
-    if (!exists) {
-      throw new ApiError(404, "Enrollment not found.");
-    }
-  }
-
-  if (payload.classSchedule) {
-    const exists = await ClassSchedule.findById(payload.classSchedule);
-
-    if (!exists) {
-      throw new ApiError(404, "Class schedule not found.");
-    }
-  }
-
-  const enrollment = payload.enrollment ?? attendance.enrollment;
-
-  const classSchedule = payload.classSchedule ?? attendance.classSchedule;
-
+  const enrollmentId = payload.enrollment ?? attendance.enrollment;
+  const classScheduleId = payload.classSchedule ?? attendance.classSchedule;
   const date = payload.date ?? attendance.date;
+
+  const enrollment =
+    await Enrollment.findById(enrollmentId).populate("courseOffering");
+
+  if (!enrollment) {
+    throw new ApiError(404, "Enrollment not found.");
+  }
+
+  const classSchedule =
+    await ClassSchedule.findById(classScheduleId).populate("courseOffering");
+
+  if (!classSchedule) {
+    throw new ApiError(404, "Class schedule not found.");
+  }
+
+  if (
+    enrollment.courseOffering._id.toString() !==
+    classSchedule.courseOffering._id.toString()
+  ) {
+    throw new ApiError(
+      400,
+      "Enrollment does not belong to this class schedule.",
+    );
+  }
+
+  const attendanceDay = DAYS[new Date(date).getDay()];
+
+  if (attendanceDay !== classSchedule.day) {
+    throw new ApiError(
+      400,
+      "Attendance date does not match the class schedule day.",
+    );
+  }
 
   const duplicate = await Attendance.findOne({
     _id: { $ne: id },
-    enrollment,
-    classSchedule,
+    enrollment: enrollmentId,
+    classSchedule: classScheduleId,
     date,
   });
 
