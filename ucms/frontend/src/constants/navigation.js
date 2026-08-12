@@ -163,6 +163,12 @@ export const navigation = [
     icon: ClipboardPen,
     roles: ["SUPER_ADMIN", "ADMIN", "FACULTY", "STUDENT"],
   },
+  {
+    title: "Quizzes Submissions",
+    url: "/app/quiz-submissions",
+    icon: ClipboardList,
+    roles: ["SUPER_ADMIN", "ADMIN", "FACULTY"],
+  },
 
   {
     title: "Announcements",

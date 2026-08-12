@@ -17,12 +17,20 @@ const router = express.Router();
 
 router.use(authenticate);
 
+// =========================
+// STUDENT SUBMITS QUIZ
+// =========================
+
 router.post(
   "/",
-  authorize(ROLES.STUDENT, ROLES.FACULTY, ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  authorize(ROLES.STUDENT),
   validate(createQuizSubmissionSchema),
   quizSubmissionController.createQuizSubmission,
 );
+
+// =========================
+// VIEW SUBMISSIONS
+// =========================
 
 router.get(
   "/",
@@ -30,11 +38,19 @@ router.get(
   quizSubmissionController.getQuizSubmissions,
 );
 
+// =========================
+// VIEW ONE SUBMISSION
+// =========================
+
 router.get(
   "/:id",
   authorize(ROLES.STUDENT, ROLES.FACULTY, ROLES.ADMIN, ROLES.SUPER_ADMIN),
   quizSubmissionController.getQuizSubmissionById,
 );
+
+// =========================
+// FACULTY GRADING
+// =========================
 
 router.patch(
   "/:id",
@@ -42,6 +58,10 @@ router.patch(
   validate(updateQuizSubmissionSchema),
   quizSubmissionController.updateQuizSubmission,
 );
+
+// =========================
+// ADMIN DELETE
+// =========================
 
 router.delete(
   "/:id",

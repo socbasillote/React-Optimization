@@ -1,8 +1,25 @@
 import * as quizSubmissionService from "./quizSubmission.service.js";
+
 import sendResponse from "../../../utils/sendResponse.js";
 
+import * as studentService from "../../students/student.service.js";
+
+import { ROLES } from "../../../constants/roles.js";
+
 export const createQuizSubmission = async (req, res) => {
-  const submission = await quizSubmissionService.createQuizSubmission(req.body);
+  let studentId;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
+  const submission = await quizSubmissionService.createQuizSubmission({
+    payload: req.body,
+    studentId,
+    userRole: req.user.role,
+  });
 
   sendResponse(res, {
     statusCode: 201,
@@ -12,7 +29,20 @@ export const createQuizSubmission = async (req, res) => {
 };
 
 export const getQuizSubmissions = async (req, res) => {
-  const result = await quizSubmissionService.getQuizSubmissions(req.query);
+  let studentId;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
+  const result = await quizSubmissionService.getQuizSubmissions({
+    ...req.query,
+    studentId,
+    userRole: req.user.role,
+    userId: req.user.id,
+  });
 
   sendResponse(res, {
     message: "Quiz submissions retrieved successfully.",
@@ -22,8 +52,21 @@ export const getQuizSubmissions = async (req, res) => {
 };
 
 export const getQuizSubmissionById = async (req, res) => {
+  let studentId;
+
+  if (req.user.role === ROLES.STUDENT) {
+    const student = await studentService.getCurrentStudent(req.user.id);
+
+    studentId = student._id;
+  }
+
   const submission = await quizSubmissionService.getQuizSubmissionById(
     req.params.id,
+    {
+      studentId,
+      userRole: req.user.role,
+      userId: req.user.id,
+    },
   );
 
   sendResponse(res, {
@@ -36,6 +79,10 @@ export const updateQuizSubmission = async (req, res) => {
   const submission = await quizSubmissionService.updateQuizSubmission(
     req.params.id,
     req.body,
+    {
+      userRole: req.user.role,
+      userId: req.user.id,
+    },
   );
 
   sendResponse(res, {

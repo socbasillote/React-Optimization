@@ -25,11 +25,12 @@ import ClassSchedulePage from "@/features/academic/class-schedule/pages/ClassSch
 import AttendancePage from "@/features/academic/attendance/pages/AttendancePage";
 import GradePage from "@/features/academic/grade/pages/GradePage";
 import AssignmentPage from "@/features/academic/assignment/pages/AssignmentPage";
-import QuizPage from "@/features/academic/quiz/pages/QuizPage";
+import RoleQuizPage from "@/features/academic/quiz/pages/RoleQuizPage";
 import AnnouncementPage from "@/features/academic/announcement/pages/AnnouncementPage";
 import RoleDashboardPage from "@/features/dashboard/pages/RolesDashboardpage";
 import AssignmentSubmissionPage from "@/features/academic/assignment-submission/pages/AssignmentSubmissionPage";
 import RoleAssignmentPage from "@/features/academic/assignment/pages/RoleAssignmentPage";
+import QuizSubmissionPage from "@/features/academic/quiz-submission/pages/QuizSubmissionPage";
 
 const router = createBrowserRouter([
   {
@@ -211,10 +212,18 @@ const router = createBrowserRouter([
           },
           {
             path: "quizzes",
-            element: <QuizPage />,
+            element: <RoleQuizPage />,
             handle: {
               title: "Quizzes",
               breadcrumb: [{ label: "Quizzes" }],
+            },
+          },
+          {
+            path: "quiz-submissions",
+            element: <QuizSubmissionPage />,
+            handle: {
+              title: "Quiz Submissions",
+              breadcrumb: [{ label: "Quiz Submissions" }],
             },
           },
           {
