@@ -18,6 +18,7 @@ import QuizDialog from "../components/QuizDialog";
 import QuizTable from "../components/QuizTable";
 
 import { useGetCurrentUserQuery } from "@/features/auth/api/authApi";
+import { useNavigate } from "react-router-dom";
 
 const getSubjectLabel = (quiz) => {
   const subject = quiz?.courseOffering?.curriculumSubject?.subject;
@@ -44,6 +45,7 @@ const getFacultyName = (quiz) => {
 };
 
 export default function QuizPage() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -140,6 +142,14 @@ export default function QuizPage() {
     }
   };
 
+  const handleManageQuestions = (quiz) => {
+    if (!canEdit) {
+      return;
+    }
+
+    navigate(`/app/quiz-questions/${quiz._id}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -167,6 +177,7 @@ export default function QuizPage() {
         isDeleting={isDeleting}
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canDelete ? handleDelete : undefined}
+        onManageQuestions={canEdit ? handleManageQuestions : undefined}
       />
 
       {meta.totalPages > 1 && (

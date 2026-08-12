@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, ClipboardList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -57,6 +57,7 @@ export default function QuizTable({
   isDeleting,
   onEdit,
   onDelete,
+  onManageQuestions,
 }) {
   const canEdit = typeof onEdit === "function";
 
@@ -166,6 +167,18 @@ export default function QuizTable({
                               <Pencil />
 
                               <span className="sr-only">Edit quiz</span>
+                            </Button>
+                          )}
+
+                          {onManageQuestions && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onManageQuestions(quiz)}
+                            >
+                              <ClipboardList />
+                              Questions
                             </Button>
                           )}
 
