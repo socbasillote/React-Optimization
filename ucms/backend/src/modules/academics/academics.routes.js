@@ -17,6 +17,7 @@ import quizRoutes from "./quiz/quiz.routes.js";
 import quizSubmissionRoutes from "./quiz-submission/quizSubmission.routes.js";
 import announcementRoutes from "./announcement/announcement.routes.js";
 import dashboardRoutes from "./dashboard/dashboard.routes.js";
+import quizQuestionRoute from "./quiz-question/quizQuestion.route.js";
 
 const router = express.Router();
 
@@ -37,5 +38,6 @@ router.use("/quizzes", quizRoutes);
 router.use("/quiz-submissions", quizSubmissionRoutes);
 router.use("/announcements", announcementRoutes);
 router.use("/dashboard", dashboardRoutes);
+router.use("/quiz-questions", quizQuestionRoute);
 
 export default router;
