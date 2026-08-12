@@ -28,6 +28,8 @@ import AssignmentPage from "@/features/academic/assignment/pages/AssignmentPage"
 import QuizPage from "@/features/academic/quiz/pages/QuizPage";
 import AnnouncementPage from "@/features/academic/announcement/pages/AnnouncementPage";
 import RoleDashboardPage from "@/features/dashboard/pages/RolesDashboardpage";
+import AssignmentSubmissionPage from "@/features/academic/assignment-submission/pages/AssignmentSubmissionPage";
+import RoleAssignmentPage from "@/features/academic/assignment/pages/RoleAssignmentPage";
 
 const router = createBrowserRouter([
   {
@@ -201,7 +203,7 @@ const router = createBrowserRouter([
           },
           {
             path: "assignments",
-            element: <AssignmentPage />,
+            element: <RoleAssignmentPage />,
             handle: {
               title: "Assignment",
               breadcrumb: [{ label: "Assignment" }],
@@ -223,6 +225,22 @@ const router = createBrowserRouter([
               breadcrumb: [{ label: "Announcements" }],
             },
           },
+          {
+            path: "assignment-submissions",
+            element: <AssignmentSubmissionPage />,
+            handle: {
+              title: "Assignment Submissions",
+              breadcrumb: [{ label: "Assignment Submissions" }],
+            },
+          },
+          /*  {
+            path: "assignment-submissions/manage",
+            element: <AssignmentSubmissionFacultyPage />,
+            handle: {
+              title: "Assignment Submissions",
+              breadcrumb: [{ label: "Assignment Submissions" }],
+            },
+          }, */
         ],
       },
     ],
