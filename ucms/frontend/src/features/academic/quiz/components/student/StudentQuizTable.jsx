@@ -84,7 +84,7 @@ export default function StudentQuizTable({
   quizzes = [],
   submissions = [],
   isLoading,
-  onSubmit,
+  onStartQuiz,
   onViewSubmission,
 }) {
   return (
@@ -210,7 +210,7 @@ export default function StudentQuizTable({
                         <Button
                           type="button"
                           size="sm"
-                          onClick={() => onSubmit(quiz)}
+                          onClick={() => onStartQuiz(quiz)}
                         >
                           <Play />
                           Start

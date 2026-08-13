@@ -11,8 +11,11 @@ import { useGetEnrollmentsQuery } from "@/features/academic/enrollment/api/enrol
 import StudentQuizTable from "../components/student/StudentQuizTable";
 import StudentQuizSubmissionDialog from "../components/student/StudentQuizSubmissionDialog";
 import StudentQuizResultDialog from "../components/student/StudentQuizResultDialog";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentQuizPage() {
+  const navigate = useNavigate();
+
   const [page, setPage] = useState(1);
 
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
@@ -81,6 +84,10 @@ export default function StudentQuizPage() {
 
   const isLoading = quizzesLoading || submissionsLoading || enrollmentsLoading;
 
+  const handleStartQuiz = (quiz) => {
+    navigate(`/app/quiz-taking/${quiz._id}`);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -95,7 +102,7 @@ export default function StudentQuizPage() {
         quizzes={quizzes}
         submissions={submissions}
         isLoading={isLoading}
-        onSubmit={handleSubmit}
+        onStartQuiz={handleStartQuiz}
         onViewSubmission={handleViewSubmission}
       />
 

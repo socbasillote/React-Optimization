@@ -32,6 +32,7 @@ import AssignmentSubmissionPage from "@/features/academic/assignment-submission/
 import RoleAssignmentPage from "@/features/academic/assignment/pages/RoleAssignmentPage";
 import QuizSubmissionPage from "@/features/academic/quiz-submission/pages/QuizSubmissionPage";
 import FacultyQuizQuestionPage from "@/features/academic/quiz-question/pages/FacultyQuizQuestionPage";
+import StudentQuizTakingPage from "@/features/academic/quiz/pages/StudentQuizTakingPage";
 
 const router = createBrowserRouter([
   {
@@ -227,6 +228,17 @@ const router = createBrowserRouter([
               breadcrumb: [
                 { label: "Quizzes", to: "/app/quizzes" },
                 { label: "Quiz Questions" },
+              ],
+            },
+          },
+          {
+            path: "quiz-taking/:quizId",
+            element: <StudentQuizTakingPage />,
+            handle: {
+              title: "Take Quiz",
+              breadcrumb: [
+                { label: "Quizzes", to: "/app/quizzes" },
+                { label: "Take Quiz" },
               ],
             },
           },
