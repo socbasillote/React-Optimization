@@ -1,5 +1,7 @@
 import ApiError from "../../../utils/ApiError.js";
 
+import * as studentService from "../../students/student.service.js";
+
 import Quiz from "../quiz/quiz.model.js";
 import QuizQuestion from "../quiz-question/quizQuestion.model.js";
 import QuizSubmission from "./quizSubmission.model.js";
@@ -259,6 +261,10 @@ export const getQuizSubmissionById = async (
           select: "firstName middleName lastName suffix email",
         },
       },
+    })
+    .populate({
+      path: "answers.question",
+      select: "question type options correctAnswer points order",
     });
 
   if (!submission) {
@@ -285,6 +291,19 @@ export const getQuizSubmissionById = async (
         "You cannot access another student's quiz submission.",
       );
     }
+
+    /*
+     * Never expose the correct answer to students.
+     */
+    submission.answers = submission.answers.map((item) => {
+      const answer = item.toObject();
+
+      if (answer.question) {
+        delete answer.question.correctAnswer;
+      }
+
+      return answer;
+    });
   }
 
   // =========================
@@ -305,6 +324,10 @@ export const getQuizSubmissionById = async (
     }
 
     const courseOffering = submission.quiz?.courseOffering;
+
+    if (!courseOffering) {
+      throw new ApiError(404, "Course offering not found.");
+    }
 
     const courseOfferingFacultyId =
       typeof courseOffering.faculty === "object"
@@ -445,8 +468,34 @@ export const createQuizSubmission = async ({
     throw new ApiError(404, "Quiz not found.");
   }
 
+  /*
+   * Find the submission created when
+   * the student started the quiz.
+   */
+  const existingSubmission = await QuizSubmission.findOne({
+    quiz: payload.quiz,
+    enrollment: payload.enrollment,
+  });
+
+  if (!existingSubmission) {
+    throw new ApiError(400, "Quiz has not been started.");
+  }
+
+  /*
+   * Prevent submitting the same quiz twice.
+   */
+  if (existingSubmission.submittedAt) {
+    throw new ApiError(409, "Quiz has already been submitted.");
+  }
+
   let enrollment;
 
+  /*
+   * STUDENT
+   * --------------------------------------------------
+   * A student can only submit using their own
+   * enrollment.
+   */
   if (userRole === ROLES.STUDENT) {
     if (!studentId) {
       throw new ApiError(404, "Student profile not found.");
@@ -458,6 +507,9 @@ export const createQuizSubmission = async ({
       quiz,
     });
   } else {
+    /*
+     * FACULTY / ADMIN / SUPER_ADMIN
+     */
     enrollment = await Enrollment.findById(payload.enrollment);
 
     if (!enrollment) {
@@ -477,6 +529,10 @@ export const createQuizSubmission = async ({
       );
     }
 
+    /*
+     * Faculty may only access quizzes belonging
+     * to their own course offerings.
+     */
     if (userRole === ROLES.FACULTY) {
       await ensureFacultyOwnsQuiz({
         userId,
@@ -485,30 +541,50 @@ export const createQuizSubmission = async ({
     }
   }
 
-  const duplicate = await QuizSubmission.findOne({
-    quiz: payload.quiz,
-    enrollment: payload.enrollment,
-  });
+  /*
+   * Use the server-recorded start time.
+   *
+   * Do NOT trust payload.startedAt from
+   * the client.
+   */
+  const startedAt = existingSubmission.startedAt;
 
-  if (duplicate) {
-    throw new ApiError(409, "Quiz has already been submitted.");
-  }
+  const submittedAt = new Date();
 
-  const startedAt = payload.startedAt ?? new Date();
-
-  const submittedAt = payload.submittedAt ?? new Date();
-
+  /*
+   * Verify the quiz was actually open when
+   * it was started.
+   */
   if (startedAt < quiz.availableFrom) {
     throw new ApiError(400, "Quiz has not opened yet.");
   }
 
-  if (submittedAt < startedAt) {
-    throw new ApiError(400, "Submission time cannot be before the start time.");
+  /*
+   * Check the quiz deadline.
+   */
+  if (quiz.dueDate && submittedAt > quiz.dueDate) {
+    throw new ApiError(400, "The quiz deadline has passed.");
   }
 
   /*
-   * Validate questions and calculate
-   * objective score.
+   * Check the time limit.
+   *
+   * Example:
+   * startedAt = 10:00
+   * timeLimit = 30
+   * deadline = 10:30
+   */
+  if (quiz.timeLimit) {
+    const deadline = new Date(startedAt.getTime() + quiz.timeLimit * 60 * 1000);
+
+    if (submittedAt > deadline) {
+      throw new ApiError(400, "The quiz time limit has expired.");
+    }
+  }
+
+  /*
+   * Validate answers and calculate the
+   * automatically graded score.
    */
   const grading = await validateAndGradeAnswers({
     quizId: quiz._id,
@@ -520,23 +596,18 @@ export const createQuizSubmission = async ({
   }
 
   /*
-   * If every question is objective,
-   * the submission is fully graded.
-   *
-   * If short-answer questions exist,
-   * the score is only the automatically
-   * graded portion and faculty can
-   * complete grading later.
+   * Update the submission that was created
+   * when the quiz was started.
    */
-  const score = grading.hasManualGrading ? grading.score : grading.score;
+  existingSubmission.answers = grading.answers;
 
-  return QuizSubmission.create({
-    ...payload,
-    answers: grading.answers,
-    startedAt,
-    submittedAt,
-    score,
-  });
+  existingSubmission.submittedAt = submittedAt;
+
+  existingSubmission.score = grading.score;
+
+  await existingSubmission.save();
+
+  return getQuizSubmissionById(existingSubmission._id);
 };
 
 /*
@@ -544,7 +615,6 @@ export const createQuizSubmission = async ({
 | UPDATE / GRADE
 |--------------------------------------------------------------------------
 */
-
 export const updateQuizSubmission = async (
   id,
   payload,
@@ -556,11 +626,23 @@ export const updateQuizSubmission = async (
     throw new ApiError(404, "Quiz submission not found.");
   }
 
-  if (payload.quiz !== undefined || payload.enrollment !== undefined) {
-    throw new ApiError(
-      400,
-      "Quiz and enrollment cannot be changed after submission.",
-    );
+  /*
+   * This endpoint is now for grading.
+   *
+   * Quiz identity, enrollment, answers,
+   * startedAt, and submittedAt are controlled
+   * by the submission lifecycle.
+   */
+  const allowedFields = ["score", "feedback"];
+
+  const attemptedFields = Object.keys(payload);
+
+  const invalidFields = attemptedFields.filter(
+    (field) => !allowedFields.includes(field),
+  );
+
+  if (invalidFields.length > 0) {
+    throw new ApiError(400, "Only score and feedback can be updated.");
   }
 
   const quiz = await Quiz.findById(submission.quiz);
@@ -569,9 +651,10 @@ export const updateQuizSubmission = async (
     throw new ApiError(404, "Quiz not found.");
   }
 
-  /*
-   * Faculty grading access.
-   */
+  // =========================
+  // FACULTY GRADING ACCESS
+  // =========================
+
   if (userRole === ROLES.FACULTY) {
     await ensureFacultyOwnsQuiz({
       userId,
@@ -579,46 +662,21 @@ export const updateQuizSubmission = async (
     });
   }
 
-  if (payload.startedAt && payload.startedAt < quiz.availableFrom) {
-    throw new ApiError(400, "Quiz has not opened yet.");
-  }
-
-  if (payload.startedAt || payload.submittedAt) {
-    const startedAt = payload.startedAt ?? submission.startedAt;
-
-    const submittedAt = payload.submittedAt ?? submission.submittedAt;
-
-    if (submittedAt < startedAt) {
-      throw new ApiError(
-        400,
-        "Submission time cannot be before the start time.",
-      );
-    }
-  }
-
   /*
-   * If answers are being updated,
-   * validate them against the quiz.
+   * Only submitted quizzes can be graded.
    */
-  if (payload.answers !== undefined) {
-    const grading = await validateAndGradeAnswers({
-      quizId: quiz._id,
-      answers: payload.answers,
-    });
-
-    submission.answers = grading.answers;
-
-    /*
-     * Recalculate objective score.
-     */
-    submission.score = grading.score;
+  if (!submission.submittedAt) {
+    throw new ApiError(400, "This quiz has not been submitted yet.");
   }
 
   /*
-   * Faculty can manually override
-   * the final score.
+   * Validate score.
    */
   if (payload.score !== undefined) {
+    if (payload.score < 0) {
+      throw new ApiError(400, "Score cannot be negative.");
+    }
+
     if (payload.score > quiz.maxScore) {
       throw new ApiError(400, `Score cannot exceed ${quiz.maxScore}.`);
     }
@@ -626,19 +684,81 @@ export const updateQuizSubmission = async (
     submission.score = payload.score;
   }
 
+  /*
+   * Update faculty feedback.
+   */
   if (payload.feedback !== undefined) {
     submission.feedback = payload.feedback;
   }
 
-  if (payload.startedAt !== undefined) {
-    submission.startedAt = payload.startedAt;
-  }
-
-  if (payload.submittedAt !== undefined) {
-    submission.submittedAt = payload.submittedAt;
-  }
-
   await submission.save();
 
-  return getQuizSubmissionById(submission.id);
+  /*
+   * Re-fetch through the same authorization
+   * layer so the returned object contains
+   * the populated quiz, student, and questions.
+   */
+  return getQuizSubmissionById(submission._id, {
+    userId,
+    userRole,
+  });
+};
+
+export const startQuiz = async ({ quizId, enrollmentId, userId, userRole }) => {
+  const quiz = await Quiz.findById(quizId);
+
+  if (!quiz) {
+    throw new ApiError(404, "Quiz not found.");
+  }
+
+  if (userRole !== ROLES.STUDENT) {
+    throw new ApiError(403, "Only students can start a quiz.");
+  }
+
+  const student = await studentService.getCurrentStudent(userId);
+
+  if (!student) {
+    throw new ApiError(404, "Student profile not found.");
+  }
+
+  const enrollment = await ensureStudentEnrollment({
+    enrollmentId,
+    studentId: student._id,
+    quiz,
+  });
+
+  const existing = await QuizSubmission.findOne({
+    quiz: quizId,
+    enrollment: enrollment._id,
+  });
+
+  if (existing) {
+    throw new ApiError(409, "Quiz has already been started or submitted.");
+  }
+
+  const now = new Date();
+
+  if (now < quiz.availableFrom) {
+    throw new ApiError(400, "Quiz has not opened yet.");
+  }
+
+  if (quiz.dueDate && now > quiz.dueDate) {
+    throw new ApiError(400, "The quiz deadline has passed.");
+  }
+
+  return QuizSubmission.create({
+    quiz: quiz._id,
+    enrollment: enrollment._id,
+    answers: [],
+    startedAt: now,
+
+    /*
+     * We don't want a started quiz to
+     * look submitted yet.
+     */
+    submittedAt: null,
+
+    score: null,
+    feedback: "",
+  });
 };

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -10,21 +10,36 @@ import { useGetQuizByIdQuery } from "../api/quizApi";
 
 import { useGetQuizQuestionsQuery } from "@/features/academic/quiz-question/api/quizQuestionApi";
 
-import { useCreateQuizSubmissionMutation } from "@/features/academic/quiz-submission/api/quizSubmissionApi";
+import {
+  useCreateQuizSubmissionMutation,
+  useStartQuizMutation,
+} from "../api/quizSubmissionApi";
 
 import { useGetEnrollmentsQuery } from "@/features/academic/enrollment/api/enrollmentApi";
 
 import StudentQuizQuestion from "../components/student/StudentQuizQuestion";
+
+const formatTime = (seconds) => {
+  if (seconds === null || seconds === undefined) {
+    return "—";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds,
+  ).padStart(2, "0")}`;
+};
 
 export default function StudentQuizTakingPage() {
   const navigate = useNavigate();
   const { quizId } = useParams();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [answers, setAnswers] = useState({});
-
   const [submitted, setSubmitted] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(null);
 
   const { data: quizData, isLoading: quizLoading } = useGetQuizByIdQuery(
     quizId,
@@ -50,6 +65,11 @@ export default function StudentQuizTakingPage() {
       page: 1,
       limit: 100,
     });
+
+  const [
+    startQuiz,
+    { data: startData, isLoading: isStarting, error: startError },
+  ] = useStartQuizMutation();
 
   const [
     createQuizSubmission,
@@ -86,6 +106,8 @@ export default function StudentQuizTakingPage() {
     });
   }, [quiz, enrollments]);
 
+  const startedSubmission = startData?.data ?? null;
+
   const currentQuestion = questions[currentIndex];
 
   const answeredCount = questions.filter(
@@ -95,6 +117,49 @@ export default function StudentQuizTakingPage() {
   ).length;
 
   const isLoading = quizLoading || questionsLoading || enrollmentsLoading;
+
+  /*
+   * Start the quiz once the quiz and enrollment
+   * have loaded.
+   */
+  useEffect(() => {
+    if (!quiz || !enrollment || startedSubmission || isStarting || submitted) {
+      return;
+    }
+
+    startQuiz({
+      quiz: quiz._id,
+      enrollment: enrollment._id,
+    }).catch((error) => {
+      console.error("Failed to start quiz:", error);
+    });
+  }, [quiz, enrollment, startedSubmission, isStarting, submitted, startQuiz]);
+
+  /*
+   * Countdown is based on the server-recorded
+   * startedAt, not component mount time.
+   */
+  useEffect(() => {
+    if (!startedSubmission?.startedAt || !quiz?.timeLimit || submitted) {
+      return;
+    }
+
+    const startedAt = new Date(startedSubmission.startedAt).getTime();
+
+    const deadline = startedAt + quiz.timeLimit * 60 * 1000;
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+
+      setRemainingSeconds(remaining);
+    };
+
+    updateTimer();
+
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, [startedSubmission?.startedAt, quiz?.timeLimit, submitted]);
 
   const handleAnswerChange = (value) => {
     if (!currentQuestion) {
@@ -116,7 +181,13 @@ export default function StudentQuizTakingPage() {
   };
 
   const handleSubmit = async () => {
-    if (!quiz || !enrollment) {
+    if (
+      !quiz ||
+      !enrollment ||
+      !startedSubmission ||
+      isSubmitting ||
+      submitted
+    ) {
       return;
     }
 
@@ -137,6 +208,20 @@ export default function StudentQuizTakingPage() {
       console.error("Failed to submit quiz:", error);
     }
   };
+
+  /*
+   * Automatically submit when timer reaches zero.
+   */
+  useEffect(() => {
+    if (
+      remainingSeconds === 0 &&
+      startedSubmission &&
+      !submitted &&
+      !isSubmitting
+    ) {
+      handleSubmit();
+    }
+  }, [remainingSeconds, startedSubmission, submitted, isSubmitting]);
 
   if (isLoading) {
     return (
@@ -172,6 +257,31 @@ export default function StudentQuizTakingPage() {
           <ArrowLeft />
           Back to Quizzes
         </Button>
+      </div>
+    );
+  }
+
+  if (startError) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-semibold">Unable to start quiz</h1>
+
+        <p className="text-sm text-destructive">
+          {startError?.data?.message ?? "The quiz could not be started."}
+        </p>
+
+        <Button variant="outline" onClick={() => navigate("/app/quizzes")}>
+          <ArrowLeft />
+          Back to Quizzes
+        </Button>
+      </div>
+    );
+  }
+
+  if (isStarting || !startedSubmission) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <p className="text-sm text-muted-foreground">Starting quiz...</p>
       </div>
     );
   }
@@ -221,9 +331,8 @@ export default function StudentQuizTakingPage() {
     );
   }
 
-  const isLastQuestion = currentIndex === questions.length - 1;
-
   const isFirstQuestion = currentIndex === 0;
+  const isLastQuestion = currentIndex === questions.length - 1;
 
   const hasCurrentAnswer =
     String(answers[currentQuestion?._id] ?? "").trim() !== "";
@@ -251,6 +360,22 @@ export default function StudentQuizTakingPage() {
             </p>
           </div>
         </div>
+
+        {quiz.timeLimit && (
+          <div
+            className={`rounded-lg border px-4 py-3 text-right ${
+              remainingSeconds !== null && remainingSeconds <= 60
+                ? "border-destructive"
+                : ""
+            }`}
+          >
+            <p className="text-xs text-muted-foreground">Time remaining</p>
+
+            <p className="font-mono text-lg font-semibold">
+              {formatTime(remainingSeconds)}
+            </p>
+          </div>
+        )}
       </div>
 
       {submitError && (
@@ -285,7 +410,7 @@ export default function StudentQuizTakingPage() {
         <Button
           type="button"
           variant="outline"
-          disabled={isFirstQuestion}
+          disabled={isFirstQuestion || isSubmitting}
           onClick={handlePrevious}
         >
           <ArrowLeft />
@@ -303,7 +428,7 @@ export default function StudentQuizTakingPage() {
         ) : (
           <Button
             type="button"
-            disabled={!hasCurrentAnswer}
+            disabled={!hasCurrentAnswer || isSubmitting}
             onClick={handleNext}
           >
             Next

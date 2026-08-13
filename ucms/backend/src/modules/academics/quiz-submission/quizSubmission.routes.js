@@ -69,4 +69,10 @@ router.delete(
   quizSubmissionController.deleteQuizSubmission,
 );
 
+router.post(
+  "/start",
+  authorize(ROLES.STUDENT),
+  quizSubmissionController.startQuiz,
+);
+
 export default router;

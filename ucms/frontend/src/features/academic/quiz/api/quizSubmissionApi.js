@@ -48,13 +48,30 @@ export const quizSubmissionApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["QuizSubmission"],
     }),
+
+    startQuiz: builder.mutation({
+      query: (body) => ({
+        url: "/academic/quiz-submissions/start",
+        method: "POST",
+        body,
+      }),
+    }),
+    getQuizSubmissions: builder.query({
+      query: (params) => ({
+        url: "/academic/quiz-submissions",
+        params,
+      }),
+      providesTags: ["QuizSubmission"],
+    }),
   }),
 });
 
 export const {
   useCreateQuizSubmissionMutation,
+  useGetQuizSubmissionsQuery,
   useGetMyQuizSubmissionsQuery,
   useGetQuizSubmissionByIdQuery,
   useUpdateQuizSubmissionMutation,
   useDeleteQuizSubmissionMutation,
+  useStartQuizMutation,
 } = quizSubmissionApi;

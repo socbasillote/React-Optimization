@@ -6,6 +6,8 @@ import * as studentService from "../../students/student.service.js";
 
 import { ROLES } from "../../../constants/roles.js";
 
+import ApiError from "../../../utils/ApiError.js";
+
 export const createQuizSubmission = async (req, res) => {
   let studentId;
 
@@ -67,6 +69,10 @@ export const getQuizSubmissionById = async (req, res) => {
   if (req.user.role === ROLES.STUDENT) {
     const student = await studentService.getCurrentStudent(req.user.id);
 
+    if (!student) {
+      throw new ApiError(404, "Student profile not found.");
+    }
+
     studentId = student._id;
   }
 
@@ -107,5 +113,20 @@ export const deleteQuizSubmission = async (req, res) => {
   sendResponse(res, {
     message: "Quiz submission deleted successfully.",
     data: null,
+  });
+};
+
+export const startQuiz = async (req, res) => {
+  const submission = await quizSubmissionService.startQuiz({
+    quizId: req.body.quiz,
+    enrollmentId: req.body.enrollment,
+    userId: req.user.id,
+    userRole: req.user.role,
+  });
+
+  sendResponse(res, {
+    statusCode: 201,
+    message: "Quiz started successfully.",
+    data: submission,
   });
 };

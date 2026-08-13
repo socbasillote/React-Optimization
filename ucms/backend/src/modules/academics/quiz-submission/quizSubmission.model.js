@@ -48,8 +48,7 @@ const quizSubmissionSchema = new mongoose.Schema(
 
     submittedAt: {
       type: Date,
-      required: true,
-      default: Date.now,
+      default: null,
     },
 
     score: {

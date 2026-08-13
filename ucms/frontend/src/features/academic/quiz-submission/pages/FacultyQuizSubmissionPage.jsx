@@ -2,13 +2,13 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import { useGetQuizSubmissionsQuery } from "../../quiz/api/quizSubmissionApi";
+import { useGetQuizSubmissionsQuery } from "../api/quizSubmissionApi";
 
-import FacultyQuizSubmissionTable from "../components/faculty/FacultyQuizSubmissionTable";
+import FacultyQuizSubmissionTable from "../components/FacultyQuizSubmissionTable";
 
-import FacultyQuizSubmissionDialog from "../components/faculty/FacultyQuizSubmissionDialog";
+import FacultyQuizSubmissionDialog from "../components/FacultyQuizSubmissionDialog";
 
-export default function QuizSubmissionPage() {
+export default function FacultyQuizSubmissionPage() {
   const [page, setPage] = useState(1);
 
   const [selectedSubmission, setSelectedSubmission] = useState(null);
