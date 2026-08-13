@@ -1,5 +1,24 @@
 import mongoose from "mongoose";
 
+const quizSubmissionAnswerSchema = new mongoose.Schema(
+  {
+    question: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "QuizQuestion",
+      required: true,
+    },
+
+    answer: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
 const quizSubmissionSchema = new mongoose.Schema(
   {
     quiz: {
@@ -14,6 +33,11 @@ const quizSubmissionSchema = new mongoose.Schema(
       ref: "Enrollment",
       required: true,
       index: true,
+    },
+
+    answers: {
+      type: [quizSubmissionAnswerSchema],
+      default: [],
     },
 
     startedAt: {

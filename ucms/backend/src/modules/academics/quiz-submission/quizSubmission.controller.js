@@ -12,11 +12,21 @@ export const createQuizSubmission = async (req, res) => {
   if (req.user.role === ROLES.STUDENT) {
     const student = await studentService.getCurrentStudent(req.user.id);
 
-    studentId = student._id;
+    console.log("===== CURRENT STUDENT =====");
+    console.log("userId:", req.user.id);
+    console.log("student:", student);
+
+    studentId = student?._id;
+
+    console.log("studentId:", studentId);
   }
+
+  console.log("===== QUIZ SUBMISSION AUTH =====");
+  console.log("req.user:", req.user);
 
   const submission = await quizSubmissionService.createQuizSubmission({
     payload: req.body,
+    userId: req.user.id,
     studentId,
     userRole: req.user.role,
   });

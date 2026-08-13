@@ -1,6 +1,7 @@
 import ApiError from "../../../utils/ApiError.js";
 
 import Quiz from "../quiz/quiz.model.js";
+import QuizQuestion from "../quiz-question/quizQuestion.model.js";
 import QuizSubmission from "./quizSubmission.model.js";
 import Enrollment from "../enrollment/enrollment.model.js";
 import Faculty from "../../faculty/faculty.model.js";
@@ -9,21 +10,32 @@ import CourseOffering from "../course-offering/courseOffering.model.js";
 import { ENROLLMENT_STATUS } from "../../../constants/enrollmentStatus.js";
 import { ROLES } from "../../../constants/roles.js";
 
-export const createQuizSubmission = async ({
-  payload,
-  userRole,
-  studentId,
-}) => {
-  const quiz = await Quiz.findById(payload.quiz);
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
-  if (!quiz) {
-    throw new ApiError(404, "Quiz not found.");
+const normalizeAnswer = (value) => {
+  if (value === undefined || value === null) {
+    return "";
   }
 
-  const enrollment = await Enrollment.findById(payload.enrollment);
+  return String(value).trim().toLowerCase();
+};
+
+const ensureStudentEnrollment = async ({ enrollmentId, studentId, quiz }) => {
+  const enrollment = await Enrollment.findById(enrollmentId);
 
   if (!enrollment) {
     throw new ApiError(404, "Enrollment not found.");
+  }
+
+  if (enrollment.student.toString() !== studentId.toString()) {
+    throw new ApiError(
+      403,
+      "You cannot submit a quiz using another student's enrollment.",
+    );
   }
 
   if (enrollment.status === ENROLLMENT_STATUS.DROPPED) {
@@ -37,50 +49,34 @@ export const createQuizSubmission = async ({
     );
   }
 
-  // STUDENT OWNERSHIP CHECK
-  if (userRole === ROLES.STUDENT) {
-    if (!studentId) {
-      throw new ApiError(404, "Student profile not found.");
-    }
+  return enrollment;
+};
 
-    if (enrollment.student.toString() !== studentId.toString()) {
-      throw new ApiError(403, "You cannot submit a quiz for another student.");
-    }
+const ensureFacultyOwnsQuiz = async ({ userId, quiz }) => {
+  const faculty = await Faculty.findOne({
+    user: userId,
+  }).select("_id");
+
+  if (!faculty) {
+    throw new ApiError(404, "Faculty profile not found.");
   }
 
-  const duplicate = await QuizSubmission.findOne({
-    quiz: payload.quiz,
-    enrollment: payload.enrollment,
-  });
+  const courseOffering = await CourseOffering.findById(
+    quiz.courseOffering,
+  ).select("faculty");
 
-  if (duplicate) {
-    throw new ApiError(409, "Quiz has already been submitted.");
+  if (!courseOffering) {
+    throw new ApiError(404, "Course offering not found.");
   }
 
-  const startedAt = payload.startedAt ?? new Date();
-  const submittedAt = payload.submittedAt ?? startedAt;
-
-  if (startedAt < quiz.availableFrom) {
-    throw new ApiError(400, "Quiz has not opened yet.");
+  if (courseOffering.faculty.toString() !== faculty._id.toString()) {
+    throw new ApiError(
+      403,
+      "You cannot access a quiz outside your course offerings.",
+    );
   }
 
-  if (submittedAt < startedAt) {
-    throw new ApiError(400, "Submission time cannot be before the start time.");
-  }
-
-  if (quiz.dueDate && submittedAt > quiz.dueDate) {
-    throw new ApiError(400, "Quiz submission deadline has passed.");
-  }
-
-  if (payload.score !== undefined && payload.score > quiz.maxScore) {
-    throw new ApiError(400, `Score cannot exceed ${quiz.maxScore}.`);
-  }
-
-  return QuizSubmission.create({
-    ...payload,
-    startedAt,
-    submittedAt,
-  });
+  return courseOffering;
 };
 
 export const getQuizSubmissions = async ({
@@ -329,10 +325,230 @@ export const getQuizSubmissionById = async (
   return submission;
 };
 
+export const deleteQuizSubmission = async (id) => {
+  const submission = await QuizSubmission.findById(id);
+
+  if (!submission) {
+    throw new ApiError(404, "Quiz submission not found.");
+  }
+
+  await submission.deleteOne();
+};
+
+/*
+|--------------------------------------------------------------------------
+| Validate and grade answers
+|--------------------------------------------------------------------------
+*/
+
+const validateAndGradeAnswers = async ({ quizId, answers = [] }) => {
+  if (!Array.isArray(answers)) {
+    throw new ApiError(400, "Answers must be an array.");
+  }
+
+  const questionIds = answers.map((item) => item.question);
+
+  const uniqueQuestionIds = new Set(questionIds.map((id) => id.toString()));
+
+  if (uniqueQuestionIds.size !== questionIds.length) {
+    throw new ApiError(400, "A question cannot be answered more than once.");
+  }
+
+  if (questionIds.length === 0) {
+    return {
+      answers: [],
+      score: 0,
+      totalPoints: 0,
+      hasManualGrading: false,
+    };
+  }
+
+  const questions = await QuizQuestion.find({
+    _id: {
+      $in: questionIds,
+    },
+    quiz: quizId,
+  }).select("_id type correctAnswer points order");
+
+  if (questions.length !== uniqueQuestionIds.size) {
+    throw new ApiError(
+      400,
+      "One or more questions do not belong to this quiz.",
+    );
+  }
+
+  const questionMap = new Map(
+    questions.map((question) => [question._id.toString(), question]),
+  );
+
+  let score = 0;
+  let totalPoints = 0;
+  let hasManualGrading = false;
+
+  const normalizedAnswers = answers.map((item) => {
+    const question = questionMap.get(item.question.toString());
+
+    totalPoints += question.points ?? 0;
+
+    const submittedAnswer = String(item.answer ?? "").trim();
+
+    /*
+     * Short answer is not automatically
+     * graded yet.
+     */
+    if (question.type === "SHORT_ANSWER") {
+      hasManualGrading = true;
+
+      return {
+        question: question._id,
+        answer: submittedAnswer,
+      };
+    }
+
+    const isCorrect =
+      normalizeAnswer(submittedAnswer) ===
+      normalizeAnswer(question.correctAnswer);
+
+    if (isCorrect) {
+      score += question.points ?? 0;
+    }
+
+    return {
+      question: question._id,
+      answer: submittedAnswer,
+    };
+  });
+
+  return {
+    answers: normalizedAnswers,
+    score,
+    totalPoints,
+    hasManualGrading,
+  };
+};
+
+/*
+|--------------------------------------------------------------------------
+| CREATE
+|--------------------------------------------------------------------------
+*/
+
+export const createQuizSubmission = async ({
+  payload,
+  userId,
+  studentId,
+  userRole,
+}) => {
+  const quiz = await Quiz.findById(payload.quiz);
+
+  if (!quiz) {
+    throw new ApiError(404, "Quiz not found.");
+  }
+
+  let enrollment;
+
+  if (userRole === ROLES.STUDENT) {
+    if (!studentId) {
+      throw new ApiError(404, "Student profile not found.");
+    }
+
+    enrollment = await ensureStudentEnrollment({
+      enrollmentId: payload.enrollment,
+      studentId,
+      quiz,
+    });
+  } else {
+    enrollment = await Enrollment.findById(payload.enrollment);
+
+    if (!enrollment) {
+      throw new ApiError(404, "Enrollment not found.");
+    }
+
+    if (enrollment.status === ENROLLMENT_STATUS.DROPPED) {
+      throw new ApiError(400, "Cannot submit using a dropped enrollment.");
+    }
+
+    if (
+      enrollment.courseOffering.toString() !== quiz.courseOffering.toString()
+    ) {
+      throw new ApiError(
+        400,
+        "Enrollment does not belong to this course offering.",
+      );
+    }
+
+    if (userRole === ROLES.FACULTY) {
+      await ensureFacultyOwnsQuiz({
+        userId,
+        quiz,
+      });
+    }
+  }
+
+  const duplicate = await QuizSubmission.findOne({
+    quiz: payload.quiz,
+    enrollment: payload.enrollment,
+  });
+
+  if (duplicate) {
+    throw new ApiError(409, "Quiz has already been submitted.");
+  }
+
+  const startedAt = payload.startedAt ?? new Date();
+
+  const submittedAt = payload.submittedAt ?? new Date();
+
+  if (startedAt < quiz.availableFrom) {
+    throw new ApiError(400, "Quiz has not opened yet.");
+  }
+
+  if (submittedAt < startedAt) {
+    throw new ApiError(400, "Submission time cannot be before the start time.");
+  }
+
+  /*
+   * Validate questions and calculate
+   * objective score.
+   */
+  const grading = await validateAndGradeAnswers({
+    quizId: quiz._id,
+    answers: payload.answers ?? [],
+  });
+
+  if (grading.score > quiz.maxScore) {
+    throw new ApiError(400, `Score cannot exceed ${quiz.maxScore}.`);
+  }
+
+  /*
+   * If every question is objective,
+   * the submission is fully graded.
+   *
+   * If short-answer questions exist,
+   * the score is only the automatically
+   * graded portion and faculty can
+   * complete grading later.
+   */
+  const score = grading.hasManualGrading ? grading.score : grading.score;
+
+  return QuizSubmission.create({
+    ...payload,
+    answers: grading.answers,
+    startedAt,
+    submittedAt,
+    score,
+  });
+};
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE / GRADE
+|--------------------------------------------------------------------------
+*/
+
 export const updateQuizSubmission = async (
   id,
   payload,
-  { userRole, userId } = {},
+  { userId, userRole } = {},
 ) => {
   const submission = await QuizSubmission.findById(id);
 
@@ -353,42 +569,14 @@ export const updateQuizSubmission = async (
     throw new ApiError(404, "Quiz not found.");
   }
 
-  // FACULTY CAN ONLY GRADE THEIR OWN QUIZZES
+  /*
+   * Faculty grading access.
+   */
   if (userRole === ROLES.FACULTY) {
-    const faculty = await Faculty.findOne({
-      user: userId,
-    }).select("_id");
-
-    if (!faculty) {
-      throw new ApiError(404, "Faculty profile not found.");
-    }
-
-    const courseOffering = await CourseOffering.findById(
-      quiz.courseOffering,
-    ).select("faculty");
-
-    console.log("===== QUIZ GRADING ACCESS =====");
-    console.log("userId:", userId);
-    console.log("userRole:", userRole);
-    console.log("faculty:", faculty);
-    console.log("quizId:", submission.quiz);
-    console.log("courseOfferingId:", quiz.courseOffering);
-    console.log("courseOffering:", courseOffering);
-
-    if (!courseOffering) {
-      throw new ApiError(404, "Course offering not found.");
-    }
-
-    if (!courseOffering.faculty) {
-      throw new ApiError(400, "Course offering has no assigned faculty.");
-    }
-
-    if (courseOffering.faculty.toString() !== faculty._id.toString()) {
-      throw new ApiError(
-        403,
-        "You cannot grade a quiz submission outside your course offerings.",
-      );
-    }
+    await ensureFacultyOwnsQuiz({
+      userId,
+      quiz,
+    });
   }
 
   if (payload.startedAt && payload.startedAt < quiz.availableFrom) {
@@ -408,26 +596,49 @@ export const updateQuizSubmission = async (
     }
   }
 
-  if (payload.score !== undefined && payload.score > quiz.maxScore) {
-    throw new ApiError(400, `Score cannot exceed ${quiz.maxScore}.`);
+  /*
+   * If answers are being updated,
+   * validate them against the quiz.
+   */
+  if (payload.answers !== undefined) {
+    const grading = await validateAndGradeAnswers({
+      quizId: quiz._id,
+      answers: payload.answers,
+    });
+
+    submission.answers = grading.answers;
+
+    /*
+     * Recalculate objective score.
+     */
+    submission.score = grading.score;
   }
 
-  Object.assign(submission, payload);
+  /*
+   * Faculty can manually override
+   * the final score.
+   */
+  if (payload.score !== undefined) {
+    if (payload.score > quiz.maxScore) {
+      throw new ApiError(400, `Score cannot exceed ${quiz.maxScore}.`);
+    }
+
+    submission.score = payload.score;
+  }
+
+  if (payload.feedback !== undefined) {
+    submission.feedback = payload.feedback;
+  }
+
+  if (payload.startedAt !== undefined) {
+    submission.startedAt = payload.startedAt;
+  }
+
+  if (payload.submittedAt !== undefined) {
+    submission.submittedAt = payload.submittedAt;
+  }
 
   await submission.save();
 
-  return getQuizSubmissionById(submission.id, {
-    userRole,
-    userId,
-  });
-};
-
-export const deleteQuizSubmission = async (id) => {
-  const submission = await QuizSubmission.findById(id);
-
-  if (!submission) {
-    throw new ApiError(404, "Quiz submission not found.");
-  }
-
-  await submission.deleteOne();
+  return getQuizSubmissionById(submission.id);
 };

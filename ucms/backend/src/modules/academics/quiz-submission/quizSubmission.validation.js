@@ -1,9 +1,17 @@
 import { z } from "zod";
 
+const answerSchema = z.object({
+  question: z.string().trim(),
+
+  answer: z.string().trim().default(""),
+});
+
 const quizSubmissionFieldsSchema = {
   quiz: z.string().trim(),
 
   enrollment: z.string().trim(),
+
+  answers: z.array(answerSchema).default([]),
 
   startedAt: z.coerce.date().optional(),
 
@@ -14,7 +22,12 @@ const quizSubmissionFieldsSchema = {
   feedback: z.string().trim().optional(),
 };
 
-// CREATE
+/*
+|--------------------------------------------------------------------------
+| CREATE
+|--------------------------------------------------------------------------
+*/
+
 const createQuizSubmissionBodySchema = z
   .object(quizSubmissionFieldsSchema)
   .refine(
@@ -35,12 +48,15 @@ export const createQuizSubmissionSchema = z.object({
   body: createQuizSubmissionBodySchema,
 });
 
-// UPDATE
+/*
+|--------------------------------------------------------------------------
+| UPDATE
+|--------------------------------------------------------------------------
+*/
+
 const updateQuizSubmissionBodySchema = z
   .object({
-    quiz: z.string().trim().optional(),
-
-    enrollment: z.string().trim().optional(),
+    answers: z.array(answerSchema).optional(),
 
     startedAt: z.coerce.date().optional(),
 
@@ -72,11 +88,23 @@ export const updateQuizSubmissionSchema = z.object({
   }),
 });
 
+/*
+|--------------------------------------------------------------------------
+| GET
+|--------------------------------------------------------------------------
+*/
+
 export const getQuizSubmissionSchema = z.object({
   params: z.object({
     id: z.string().trim(),
   }),
 });
+
+/*
+|--------------------------------------------------------------------------
+| DELETE
+|--------------------------------------------------------------------------
+*/
 
 export const deleteQuizSubmissionSchema = z.object({
   params: z.object({
