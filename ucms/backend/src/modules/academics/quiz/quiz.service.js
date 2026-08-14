@@ -61,18 +61,24 @@ export const getQuizzes = async ({
 
   const [quizzes, total] = await Promise.all([
     Quiz.find(filter)
+      .select(
+        "title description availableFrom dueDate timeLimit maxScore courseOffering",
+      )
       .populate({
         path: "courseOffering",
+        select: "curriculumSubject faculty section",
         populate: [
           {
             path: "curriculumSubject",
+            select: "subject",
             populate: {
               path: "subject",
-              select: "code title units",
+              select: "code title",
             },
           },
           {
             path: "faculty",
+            select: "user",
             populate: {
               path: "user",
               select: "firstName lastName",
@@ -80,7 +86,7 @@ export const getQuizzes = async ({
           },
           {
             path: "section",
-            select: "name yearLevel",
+            select: "name",
           },
         ],
       })
@@ -88,7 +94,8 @@ export const getQuizzes = async ({
         dueDate: 1,
       })
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .lean(),
 
     Quiz.countDocuments(filter),
   ]);
